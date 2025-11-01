@@ -8,6 +8,7 @@
 #define MAX_NROHOUSE 5
 #define MAX_CEP 10
 
+#define MIN_CAPACITY 10
 
 // ==================== STRUCTS ====================
 typedef struct {
@@ -26,11 +27,13 @@ struct Usuario {
     Data data_nascimento;
 };
 
-// ==================== PROTOTIPOS ====================
-// Menus
+// ==================== INICALIZAÇÃO (protótipo das funções) ====================
+// Declarar a função para ser inicializada, evitando possíveis erros.
+// Além de ficar bem mais fácil a visualização do código enorme abaixo.
 void menu_principal();
 void submenu_usuarios();
 
+struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
 
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
@@ -55,7 +58,6 @@ void menu_principal() {
             case 1:
                 submenu_usuarios();
         }
-
     } while (opt != 5);
 }
 
@@ -63,10 +65,66 @@ void menu_principal() {
 void submenu_usuarios() {
     int opt;
 
+    struct Usuario *DB_Usuarios = NULL;
+    int qntd_elementos = 0, capacidade_total = 0;
+
+    // Optei por não utilizar ponteiro de ponteiro por ser mais intuitivo para mim.
+    DB_Usuarios = carregar_usuarios(&qntd_elementos, &capacidade_total);
+
     printf("#-------- MENU DE USUARIOS. --------#\n");
     do {
         printf("5. Sair\n");
         printf("Escolha sua opcao: ");
         scanf("%d", &opt);
     } while (opt != 5);
+}
+
+// ---------→→→→→ Por ordem de função chamada dentro do Subprograma!
+struct Usuario *carregar_usuarios(int *qntd, int *capacidade) {
+    FILE *fUser = fopen("dados_usuarios.dat", "rb");
+    struct Usuario *DB = NULL;
+
+    if (fUser  == NULL ) {
+        printf("Arquivo de Usuários não encontrado!\nGerando arquivos iniciais de Usuario...\n\n");
+        *capacidade = MIN_CAPACITY;
+        *qntd = 0;
+
+        DB = (struct Usuario*)malloc((*capacidade) * sizeof(struct Usuario));
+        if (DB == NULL) {
+            printf("Erro: falha na alocação de memória.");
+            exit(0);
+        }
+
+        // Princípio de evitar excesso de tabulação.
+        if ((fUser = fopen("dados_usuarios.dat", "wb")) == NULL) {
+            printf("Erro: falha na criação do arquivo.");
+            exit(1);
+        }
+
+        fclose(fUser);
+        return DB;
+    }
+
+    fseek(fUser, 0, SEEK_END);
+    long tamanho = ftell(fUser);
+    if ( (*qntd = tamanho / sizeof(struct Usuario)) == -1 ) {
+        *qntd = 0;
+    };
+    rewind(fUser);
+
+    *capacidade = (*qntd > MIN_CAPACITY) ? *qntd : MIN_CAPACITY;
+
+    DB = (struct Usuario*)malloc((*capacidade) * sizeof(struct Usuario));
+    if (DB == NULL) {
+        printf("Erro: falha na alocação de memória.");
+        exit(0);
+    }
+
+    if (*qntd > 0) {
+        fread(DB, sizeof(struct Usuario), *qntd, fUser);
+        printf("Dados carregados.\n");
+    }
+
+    fclose(fUser);
+    return DB;
 }
