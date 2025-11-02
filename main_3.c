@@ -8,12 +8,9 @@
 #define MAX_NROHOUSE 5
 #define MAX_CEP 10
 
-#define MIN_CAPACITY 10
+#define MIN_CAPACITY 5
 
 // ==================== STRUCTS ====================
-typedef struct {
-    int dia, mes, ano;
-} Data;
 
 struct Usuario {
     char CPF[MAX_CPF];
@@ -24,7 +21,7 @@ struct Usuario {
     char numeros_telefone[2][MAX_PHONE];
     char contas_email[2][MAX_STRING];
     char profissao[MAX_STRING];
-    Data data_nascimento;
+    int data_nascimento[3];
 };
 
 // ==================== INICALIZAÇÃO (protótipo das funções) ====================
@@ -34,6 +31,9 @@ void menu_principal();
 void submenu_usuarios();
 
 struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
+void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
+void listar_usuarios(struct Usuario *DB, int qntd);
+
 
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
@@ -57,6 +57,7 @@ void menu_principal() {
         switch(opt) {
             case 1:
                 submenu_usuarios();
+                break;
         }
     } while (opt != 5);
 }
@@ -68,14 +69,26 @@ void submenu_usuarios() {
     struct Usuario *DB_Usuarios = NULL;
     int qntd_elementos = 0, capacidade_total = 0;
 
-    // Optei por não utilizar ponteiro de ponteiro por ser mais intuitivo para mim.
+    // Optei por não utilizar ponteiro de ponteiro por ser mais intuitivo para mim. E por questões didáticas.
     DB_Usuarios = carregar_usuarios(&qntd_elementos, &capacidade_total);
 
     printf("#-------- MENU DE USUARIOS. --------#\n");
     do {
+        printf("1. Listar Todos os Usuarios\n");
+        printf("3. Inserir Usuario\n");
         printf("5. Sair\n");
         printf("Escolha sua opcao: ");
         scanf("%d", &opt);
+
+        switch(opt) {
+            // Criar retornos para verificação por IF!
+            case 1 :
+                listar_usuarios(DB_Usuarios, qntd_elementos);
+                break;
+            case 3:
+                inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);
+                break;
+        }
     } while (opt != 5);
 }
 
@@ -85,19 +98,19 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade) {
     struct Usuario *DB = NULL;
 
     if (fUser  == NULL ) {
-        printf("Arquivo de Usuários não encontrado!\nGerando arquivos iniciais de Usuario...\n\n");
+        printf("Arquivo de Usuarios nao encontrado!\nGerando arquivos iniciais de Usuario...\n\n");
         *capacidade = MIN_CAPACITY;
         *qntd = 0;
 
         DB = (struct Usuario*)malloc((*capacidade) * sizeof(struct Usuario));
         if (DB == NULL) {
-            printf("Erro: falha na alocação de memória.");
-            exit(0);
+            printf("Erro: falha na alocacao de memoria.");
+            exit(1);
         }
 
         // Princípio de evitar excesso de tabulação.
         if ((fUser = fopen("dados_usuarios.dat", "wb")) == NULL) {
-            printf("Erro: falha na criação do arquivo.");
+            printf("Erro: falha na criacao do arquivo.");
             exit(1);
         }
 
@@ -116,8 +129,8 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade) {
 
     DB = (struct Usuario*)malloc((*capacidade) * sizeof(struct Usuario));
     if (DB == NULL) {
-        printf("Erro: falha na alocação de memória.");
-        exit(0);
+        printf("Erro: falha na alocacao de memoria.");
+        exit(1);
     }
 
     if (*qntd > 0) {
@@ -128,3 +141,55 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade) {
     fclose(fUser);
     return DB;
 }
+
+void listar_usuarios(struct Usuario *DB, int qntd) {
+    int i;
+
+    for (i = 0; i < qntd; i++) {
+        printf("\nPOSICAO %d:\n", i);
+        printf("CPF: %s\n", DB[i].CPF);
+        printf("Nome: %s\n", DB[i].nome);
+        printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
+        printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
+        printf("Email 1: %s\n", DB[i].contas_email[0]);
+        printf("Email 2: %s\n", DB[i].contas_email[1]);
+        printf("Profissao: %s\n", DB[i].profissao);
+        printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
+        printf("CEP: %s\n", DB[i].CEP);
+        printf("Rua: %s\n", DB[i].nome_rua);
+        printf("Numero casa: %s\n", DB[i].numero_casa);
+    }
+}
+
+void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
+    if ((*qntd) == (*capacidade)) {
+        (*capacidade)++;
+        
+        // Fazendo com um tempDB para não dar realloc direto no DB, caso aconteça NULL, vazamos a memória inteira.
+        struct Usuario *tempDB = realloc(*DB, (*capacidade) * sizeof(struct Usuario));
+        if (tempDB == NULL) {
+            printf("Erro: falha na realocacao de memoria.");
+            exit(1);
+        }
+
+        *DB = tempDB;
+    }
+    
+    // Lembrar de tratar bem o strcpy depois.
+    strcpy((*DB)[*qntd].CPF, "1234567890");
+    strcpy((*DB)[*qntd].nome, "Carlos Silva");
+    strcpy((*DB)[*qntd].nome_rua, "Rua das Flores, 100");
+    strcpy((*DB)[*qntd].numero_casa, "123");
+    strcpy((*DB)[*qntd].numeros_telefone[0], "1199999999");
+    strcpy((*DB)[*qntd].numeros_telefone[1], "1133334444");
+    strcpy((*DB)[*qntd].contas_email[0], "carlos@example.com");
+    strcpy((*DB)[*qntd].contas_email[1], "c.silva@trab.com");
+    strcpy((*DB)[*qntd].profissao, "Engenheiro");
+    (*DB)[*qntd].data_nascimento[0] = 1; // Talvez voltem a virar string.
+    (*DB)[*qntd].data_nascimento[1] = 1;
+    (*DB)[*qntd].data_nascimento[2] = 2001;
+    strcpy((*DB)[*qntd].CEP, "12345000");
+
+    (*qntd)++;
+}
+
