@@ -31,9 +31,10 @@ void menu_principal();
 void submenu_usuarios();
 
 struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
-void listar_usuarios(struct Usuario *DB, int qntd);
-void listar_usuario(struct Usuario *DB, int qntd);
+void listar_todos_usuarios(struct Usuario *DB, int qntd);
+void listar_especifico_usuario(struct Usuario *DB, int qntd);
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
+void salvar_usuarios(struct Usuario *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
 
@@ -78,6 +79,7 @@ void menu_principal() {
 void submenu_usuarios() {
     int opt;
     int CPF[MAX_STRING];
+    int FLAG_clientInserted = 0;
 
     struct Usuario *DB_Usuarios = NULL;
     int qntd_elementos = 0, capacidade_total = 0;
@@ -90,23 +92,31 @@ void submenu_usuarios() {
         printf("1. Listar Todos os Usuarios\n");
         printf("2. Listar Usuario Especifico\n");
         printf("3. Inserir Usuario\n");
-        printf("5. Sair\n");
+        printf("4. Alterar Usuario [NAO IMPLEMENTADO]\n");
+        printf("5. Excluir Usuario [NAO IMPLEMENTADO]\n");
+        printf("6. Sair\n");
         printf("Escolha sua opcao: ");
         scanf("%d", &opt);
 
         switch(opt) {
             // Criar retornos para verificação por IF!
+            // Lidar com EXITS para return na maioria das vezes.
             case 1 :
-                listar_usuarios(DB_Usuarios, qntd_elementos);
+                listar_todos_usuarios(DB_Usuarios, qntd_elementos);
                 break;
             case 2:
-                listar_usuario(DB_Usuarios, qntd_elementos);
+                listar_especifico_usuario(DB_Usuarios, qntd_elementos);
                 break;
             case 3:
-                inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);
+                inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);  
                 break;
         }
-    } while (opt != 5);
+    } while (opt != 6);
+
+    salvar_usuarios(DB_Usuarios, qntd_elementos);
+
+    if(DB_Usuarios != NULL) free(DB_Usuarios);
+    printf("Retornando...\n\n");
 }
 
 // ---------→→→→→ Por ordem de função chamada dentro do Subprograma!
@@ -159,7 +169,7 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade) {
     return DB;
 }
 
-void listar_usuarios(struct Usuario *DB, int qntd) {
+void listar_todos_usuarios(struct Usuario *DB, int qntd) {
     int i;
 
     for (i = 0; i < qntd; i++) {
@@ -178,7 +188,7 @@ void listar_usuarios(struct Usuario *DB, int qntd) {
     }
 }
 
-void listar_usuario(struct Usuario *DB, int qntd) {
+void listar_especifico_usuario(struct Usuario *DB, int qntd) {
     char cpfBusca[MAX_CPF];
 
     getchar();
@@ -196,18 +206,20 @@ void listar_usuario(struct Usuario *DB, int qntd) {
     // buscar_index_usuario();
 }
 
-// int buscar_index_usuario(char cpf[], struct Usuario *DB, int qntd) {
+void salvar_usuarios(struct Usuario *DB, int qntd) {
+    FILE *fUser;
 
+    if ((fUser = fopen("dados_usuarios.dat", "wb")) == NULL) {
+        printf("Erro: falha ao salvar usuarios.");
+        exit(1);
+    }
 
-//     int i;
-//     for (i = 0; i < pos; i++) {
-//         if (strcmp(cpf, v[i].cpf) == 0) {
-//             return i;
-//         }
-//     }
-
-//     return -1;
-// }
+    if (qntd > 0) {
+        fwrite(DB, sizeof(struct Usuario), qntd, fUser);
+        printf("Usuarios salvos com sucesso.\n");
+    }
+    fclose(fUser);
+}
 
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     if ((*qntd) == (*capacidade)) {
@@ -239,5 +251,6 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     strcpy((*DB)[*qntd].CEP, "12345000");
 
     (*qntd)++;
+    printf("Usuario inserido com sucesso.\n");
 }
 
