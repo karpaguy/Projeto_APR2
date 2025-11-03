@@ -31,8 +31,20 @@ void menu_principal();
 void submenu_usuarios();
 
 struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
-void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
 void listar_usuarios(struct Usuario *DB, int qntd);
+void listar_usuario(struct Usuario *DB, int qntd);
+void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
+
+int AUXILIAR_contarString(char str[]);
+
+// ==================== AUXILIARES ====================
+int AUXILIAR_contarString(char str[]) {
+    int i = 0;
+    while (str[i] != '\0') {
+        i++;
+    }
+    return i;
+}
 
 
 // ==================== PROGRAMA PRINCIPAL ====================
@@ -65,6 +77,7 @@ void menu_principal() {
 // ==================== SUBPROGRAMA USUÁRIOS ====================
 void submenu_usuarios() {
     int opt;
+    int CPF[MAX_STRING];
 
     struct Usuario *DB_Usuarios = NULL;
     int qntd_elementos = 0, capacidade_total = 0;
@@ -75,6 +88,7 @@ void submenu_usuarios() {
     printf("#-------- MENU DE USUARIOS. --------#\n");
     do {
         printf("1. Listar Todos os Usuarios\n");
+        printf("2. Listar Usuario Especifico\n");
         printf("3. Inserir Usuario\n");
         printf("5. Sair\n");
         printf("Escolha sua opcao: ");
@@ -84,6 +98,9 @@ void submenu_usuarios() {
             // Criar retornos para verificação por IF!
             case 1 :
                 listar_usuarios(DB_Usuarios, qntd_elementos);
+                break;
+            case 2:
+                listar_usuario(DB_Usuarios, qntd_elementos);
                 break;
             case 3:
                 inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);
@@ -160,6 +177,37 @@ void listar_usuarios(struct Usuario *DB, int qntd) {
         printf("Numero casa: %s\n", DB[i].numero_casa);
     }
 }
+
+void listar_usuario(struct Usuario *DB, int qntd) {
+    char cpfBusca[MAX_CPF];
+
+    getchar();
+    printf("Insira o CPF de busca: ");
+    fgets(cpfBusca, sizeof(cpfBusca), stdin);
+    cpfBusca[strcspn(cpfBusca, "\n")] = '\0';
+
+    while (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
+        printf("\nstring size: %d\n", AUXILIAR_contarString(cpfBusca));
+        printf("\nFormatacao invalida de CPF.\n Insira novamente: ");
+        fgets(cpfBusca, sizeof(cpfBusca), stdin);
+        cpfBusca[strcspn(cpfBusca, "\n")] = '\0';
+    }
+
+    // buscar_index_usuario();
+}
+
+// int buscar_index_usuario(char cpf[], struct Usuario *DB, int qntd) {
+
+
+//     int i;
+//     for (i = 0; i < pos; i++) {
+//         if (strcmp(cpf, v[i].cpf) == 0) {
+//             return i;
+//         }
+//     }
+
+//     return -1;
+// }
 
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     if ((*qntd) == (*capacidade)) {
