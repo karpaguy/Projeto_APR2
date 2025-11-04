@@ -35,6 +35,7 @@ void listar_todos_usuarios(struct Usuario *DB, int qntd);
 void listar_especifico_usuario(struct Usuario *DB, int qntd);
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
 void salvar_usuarios(struct Usuario *DB, int qntd);
+int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
 
@@ -46,7 +47,6 @@ int AUXILIAR_contarString(char str[]) {
     }
     return i;
 }
-
 
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
@@ -147,9 +147,12 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade) {
 
     fseek(fUser, 0, SEEK_END);
     long tamanho = ftell(fUser);
-    if ( (*qntd = tamanho / sizeof(struct Usuario)) == -1 ) {
-        *qntd = 0;
-    };
+    if (tamanho == -1) {
+        printf("Erro: falha ao determinar tamanho do arquivo.");
+        exit(0);
+    }
+
+    *qntd = tamanho / sizeof(struct Usuario);
     rewind(fUser);
 
     *capacidade = (*qntd > MIN_CAPACITY) ? *qntd : MIN_CAPACITY;
@@ -190,6 +193,7 @@ void listar_todos_usuarios(struct Usuario *DB, int qntd) {
 
 void listar_especifico_usuario(struct Usuario *DB, int qntd) {
     char cpfBusca[MAX_CPF];
+    int i;
 
     getchar();
     printf("Insira o CPF de busca: ");
@@ -198,12 +202,82 @@ void listar_especifico_usuario(struct Usuario *DB, int qntd) {
 
     while (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
         printf("\nstring size: %d\n", AUXILIAR_contarString(cpfBusca));
-        printf("\nFormatacao invalida de CPF.\n Insira novamente: ");
+        printf("\nAVISO: Formatacao invalida de CPF.\n Insira novamente: ");
         fgets(cpfBusca, sizeof(cpfBusca), stdin);
         cpfBusca[strcspn(cpfBusca, "\n")] = '\0';
     }
 
-    // buscar_index_usuario();
+    if ((i = buscar_index_usuario(cpfBusca, DB, qntd)) == -1) {
+        printf("Usuario nao encontrado. Retornando...\n");
+        return;
+    }
+
+    // printf("VALOR DE I: %d", i);
+    printf("Usuario encontrado.\n");
+
+    printf("\nPOSICAO %d:\n", i);
+    printf("CPF: %s\n", DB[i].CPF);
+    printf("Nome: %s\n", DB[i].nome);
+    printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
+    printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
+    printf("Email 1: %s\n", DB[i].contas_email[0]);
+    printf("Email 2: %s\n", DB[i].contas_email[1]);
+    printf("Profissao: %s\n", DB[i].profissao);
+    printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
+    printf("CEP: %s\n", DB[i].CEP);
+    printf("Rua: %s\n", DB[i].nome_rua);
+    printf("Numero casa: %s\n", DB[i].numero_casa);
+}
+void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
+    if ((*qntd) == (*capacidade)) {
+        (*capacidade)++;
+        
+        // Fazendo com um tempDB para não dar realloc direto no DB, caso aconteça NULL, vazamos a memória inteira.
+        struct Usuario *tempDB = realloc(*DB, (*capacidade) * sizeof(struct Usuario));
+        if (tempDB == NULL) {
+            printf("Erro: falha na realocacao de memoria.");
+            exit(1);
+        }
+
+        *DB = tempDB;
+    }
+
+    // Usuario novoU;
+    // getchar();
+
+    getchar();
+    // strcpy((*DB)[*qntd].CPF, "12345678900");
+    printf("NOVO - Insira o CPF: ");
+    fgets(novoU.CPF, MAX_CPF, stdin);
+    novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+
+    while (buscar_index_usuario(novoU.CPF, DB, qntd) != -1) {
+        printf("\nAVISO: CPF digitado já existe. Insira novamente:");
+        fgets(novoU.CPF, MAX_CPF, stdin);
+        novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+    }
+
+    printf("CPF válido.\n NOVO - Insira o CPF: ");
+    fgets(novoU.CPF, MAX_CPF, stdin);
+    novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+
+    strcpy((*DB)[*qntd].nome, "Carlos Silva");
+
+    // Lembrar de tratar bem o strcpy depois.
+    strcpy((*DB)[*qntd].nome_rua, "Rua das Flores, 100");
+    strcpy((*DB)[*qntd].numero_casa, "123");
+    strcpy((*DB)[*qntd].numeros_telefone[0], "1199999999");
+    strcpy((*DB)[*qntd].numeros_telefone[1], "1133334444");
+    strcpy((*DB)[*qntd].contas_email[0], "carlos@example.com");
+    strcpy((*DB)[*qntd].contas_email[1], "c.silva@trab.com");
+    strcpy((*DB)[*qntd].profissao, "Engenheiro");
+    (*DB)[*qntd].data_nascimento[0] = 1; // Talvez voltem a virar string.
+    (*DB)[*qntd].data_nascimento[1] = 1;
+    (*DB)[*qntd].data_nascimento[2] = 2001;
+    strcpy((*DB)[*qntd].CEP, "12345000");
+
+    (*qntd)++;
+    printf("Usuario inserido com sucesso.\n");
 }
 
 void salvar_usuarios(struct Usuario *DB, int qntd) {
@@ -221,36 +295,20 @@ void salvar_usuarios(struct Usuario *DB, int qntd) {
     fclose(fUser);
 }
 
-void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
-    if ((*qntd) == (*capacidade)) {
-        (*capacidade)++;
-        
-        // Fazendo com um tempDB para não dar realloc direto no DB, caso aconteça NULL, vazamos a memória inteira.
-        struct Usuario *tempDB = realloc(*DB, (*capacidade) * sizeof(struct Usuario));
-        if (tempDB == NULL) {
-            printf("Erro: falha na realocacao de memoria.");
-            exit(1);
+int buscar_index_usuario(char key[], struct Usuario *DB, int qntd) {
+    int i = 0;
+    int FLAG_indexLocalized = 0;
+
+    // Busca linear para casos simples. Ou talvez tenha que ir lá para fora, e verificar se já foi ordenado.
+    if (qntd <= MIN_CAPACITY) {
+        while (!FLAG_indexLocalized && i < qntd) {
+            if(strcmp(DB[i].CPF, key) == 0) {
+                FLAG_indexLocalized = 1;
+            } else {
+                i++;
+            }
         }
-
-        *DB = tempDB;
     }
-    
-    // Lembrar de tratar bem o strcpy depois.
-    strcpy((*DB)[*qntd].CPF, "1234567890");
-    strcpy((*DB)[*qntd].nome, "Carlos Silva");
-    strcpy((*DB)[*qntd].nome_rua, "Rua das Flores, 100");
-    strcpy((*DB)[*qntd].numero_casa, "123");
-    strcpy((*DB)[*qntd].numeros_telefone[0], "1199999999");
-    strcpy((*DB)[*qntd].numeros_telefone[1], "1133334444");
-    strcpy((*DB)[*qntd].contas_email[0], "carlos@example.com");
-    strcpy((*DB)[*qntd].contas_email[1], "c.silva@trab.com");
-    strcpy((*DB)[*qntd].profissao, "Engenheiro");
-    (*DB)[*qntd].data_nascimento[0] = 1; // Talvez voltem a virar string.
-    (*DB)[*qntd].data_nascimento[1] = 1;
-    (*DB)[*qntd].data_nascimento[2] = 2001;
-    strcpy((*DB)[*qntd].CEP, "12345000");
 
-    (*qntd)++;
-    printf("Usuario inserido com sucesso.\n");
+    return (FLAG_indexLocalized) ? i : -1;
 }
-
