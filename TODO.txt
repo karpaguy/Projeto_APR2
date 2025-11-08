@@ -1,0 +1,3 @@
+• Formatar CPF
+• Verificações de Inserir
+• Return das funções para apresentar ao usuário

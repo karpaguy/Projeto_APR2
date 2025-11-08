@@ -38,6 +38,8 @@ void salvar_usuarios(struct Usuario *DB, int qntd);
 int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
+int AUXILIAR_confirmar();
+void AUXILIAR_limparBuffer();
 
 // ==================== AUXILIARES ====================
 int AUXILIAR_contarString(char str[]) {
@@ -47,6 +49,19 @@ int AUXILIAR_contarString(char str[]) {
     }
     printf("\nPORAR: %d\n", i);
     return i;
+}
+
+int AUXILIAR_confirmar() {
+    char str;
+    printf("Tem certeza que deseja realizar esta operação? (S/N)");
+    scanf(" %c", &str);
+    if (str == 's' || str == 'S') return 1;
+    return 0; 
+}
+
+void AUXILIAR_limparBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
 // ==================== PROGRAMA PRINCIPAL ====================
@@ -245,7 +260,7 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     }
     
     // limpar buffer. Pode virar AUXILIAR
-    int c;
+    
     struct Usuario novoU;
     
     // #================ CPF
@@ -261,7 +276,7 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
         printf("\nAVISO: CPF digitado já existe. Insira novamente:");
         scanf("%s", novoU.CPF);
     }
-    while ((c = getchar()) != '\n' && c != EOF);
+    AUXILIAR_limparBuffer();
     
     // #================ NOME
     printf("CPF valido.\nNOVO - Insira o Nome: ");
@@ -347,6 +362,23 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
 
     printf("Usuario inserido com sucesso.\n");
 }
+void deletar_usuario(struct Usuario *DB, int *qntd) {
+    char CPF_busca[MAX_CPF];
+    printf("Digite o CPF do cliente que deseja excluir: ");
+    scanf("%s", cpf);
+
+    int i = buscar_index_usuario(CPF_busca, *DB, *qntd)
+    if (i == -1) {
+        printf("\nAVISO: CPF inexistente.");
+        return;
+    }
+
+    printf("Cliente a ser excluido...\nUsuario: %s - CPF: %s\n", DB[i].nome, DB[i].CPF);
+    AUXILIAR_confirmar()
+}
+
+
+
 
 void salvar_usuarios(struct Usuario *DB, int qntd) {
     FILE *fUser;
