@@ -253,12 +253,19 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     fgets(novoU.CPF, MAX_CPF, stdin);
     novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
 
+    while(AUXILIAR_contarString(novoU.CPF) != MAX_CPF - 1) {
+        printf("\nAVISO: Tamanho inválido para CPF. Insira novamente:");
+        fgets(novoU.CPF, MAX_CPF, stdin);
+        novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+    }
+
     while (buscar_index_usuario(novoU.CPF, *DB, *qntd) != -1) {
         printf("\nAVISO: CPF digitado já existe. Insira novamente:");
         fgets(novoU.CPF, MAX_CPF, stdin);
         novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
     }
 
+    while ((c = getchar()) != '\n' && c != EOF);
     // strcpy((*DB)[*qntd].nome, "Carlos Silva");
     printf("CPF valido.\nNOVO - Insira o Nome: ");
     fgets(novoU.nome, MAX_STRING, stdin);
