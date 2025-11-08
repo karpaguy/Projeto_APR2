@@ -4,7 +4,7 @@
 
 #define MAX_CPF 12 // Ex.: 12345678900\0
 #define MAX_STRING 100
-#define MAX_PHONE 12 // Ex.: 1699431-7717\0
+#define MAX_PHONE 13 // Ex.: 16994317717\0
 #define MAX_NROHOUSE 5
 #define MAX_CEP 10
 
@@ -45,6 +45,7 @@ int AUXILIAR_contarString(char str[]) {
     while (str[i] != '\0') {
         i++;
     }
+    printf("\nPORAR: %d\n", i);
     return i;
 }
 
@@ -229,6 +230,7 @@ void listar_especifico_usuario(struct Usuario *DB, int qntd) {
     printf("Numero casa: %s\n", DB[i].numero_casa);
 }
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
+    
     if ((*qntd) == (*capacidade)) {
         (*capacidade)++;
         
@@ -238,87 +240,107 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
             printf("Erro: falha na realocacao de memoria.");
             exit(1);
         }
-
+        
         *DB = tempDB;
     }
-
-    struct Usuario novoU;
-
+    
     // limpar buffer. Pode virar AUXILIAR
     int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-
-    // strcpy((*DB)[*qntd].CPF, "12345678900");
+    struct Usuario novoU;
+    
+    // #================ CPF
     printf("NOVO - Insira o CPF: "); // Precisa validador com trim.
-    fgets(novoU.CPF, MAX_CPF, stdin);
-    novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+    scanf("%s", novoU.CPF);
 
-    while(AUXILIAR_contarString(novoU.CPF) != MAX_CPF - 1) {
-        printf("\nAVISO: Tamanho inválido para CPF. Insira novamente:");
-        fgets(novoU.CPF, MAX_CPF, stdin);
-        novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
-    }
-
+    // while(AUXILIAR_contarString(novoU.CPF) != MAX_CPF - 1) {
+    //     printf("\nAVISO: Tamanho inválido para CPF. Insira novamente:");
+    //     fgets(novoU.CPF, MAX_CPF, stdin);
+    //     novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+    // }
     while (buscar_index_usuario(novoU.CPF, *DB, *qntd) != -1) {
         printf("\nAVISO: CPF digitado já existe. Insira novamente:");
-        fgets(novoU.CPF, MAX_CPF, stdin);
-        novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+        scanf("%s", novoU.CPF);
     }
-
     while ((c = getchar()) != '\n' && c != EOF);
-    // strcpy((*DB)[*qntd].nome, "Carlos Silva");
+    
+    // #================ NOME
     printf("CPF valido.\nNOVO - Insira o Nome: ");
     fgets(novoU.nome, MAX_STRING, stdin);
     novoU.nome[strcspn(novoU.nome, "\n")] = '\0';
     
-    // strcpy((*DB)[*qntd].CEP, "12345000");
+    // #================ CEP
     printf("\nNOVO - Insira o CEP: ");
     fgets(novoU.CEP, MAX_CEP, stdin);
     novoU.CEP[strcspn(novoU.CEP, "\n")] = '\0';
+    AUXILIAR_contarString(novoU.CEP);
+    // while(AUXILIAR_contarString(novoU.CEP) != MAX_CEP - 1) {
+    //     printf("\nAVISO: Tamanho inválido para CEP. Insira novamente:");
+    //     fgets(novoU.CEP, MAX_CEP, stdin);
+    //     novoU.CEP[strcspn(novoU.CEP, "\n")] = '\0';
+    // }
 
-    // strcpy((*DB)[*qntd].nome_rua, "Rua das Flores, 100");
+    // #================ RUA NOME
     printf("\nNOVO - Insira a Rua: ");
     fgets(novoU.nome_rua, MAX_STRING, stdin);
     novoU.nome_rua[strcspn(novoU.nome_rua, "\n")] = '\0';
+    AUXILIAR_contarString(novoU.nome_rua);
 
-    // strcpy((*DB)[*qntd].numero_casa, "123");
-    printf("\nNOVO - Insira o Numero da Rua: ");
+    // #================ CASA NUMERO
+    printf("\nNOVO - Insira o Numero da Casa: ");
     fgets(novoU.numero_casa, MAX_NROHOUSE, stdin);
     novoU.numero_casa[strcspn(novoU.numero_casa, "\n")] = '\0';
+    // while(AUXILIAR_contarString(novoU.numero_casa) > MAX_NROHOUSE - 1) {
+    //     printf("\nAVISO: Tamanho inválido para NUMERO DE CASA. Insira novamente:");
+    //     fgets(novoU.numero_casa, MAX_NROHOUSE, stdin);
+    //     novoU.numero_casa[strcspn(novoU.numero_casa, "\n")] = '\0';
+    // }
     
-    // strcpy((*DB)[*qntd].numeros_telefone[0], "1199999999");
+    // #================ NUMERO CELULAR 1
     printf("\nNOVO - Insira o Primeiro Telefone: ");
     fgets(novoU.numeros_telefone[0], MAX_PHONE, stdin);
     novoU.numeros_telefone[0][strcspn(novoU.numeros_telefone[0], "\n")] = '\0';
     
-    // strcpy((*DB)[*qntd].numeros_telefone[1], "1133334444");
+    // while(AUXILIAR_contarString(novoU.numeros_telefone[0]) != MAX_PHONE - 1) {
+    //     printf("\nAVISO: Tamanho inválido para TELEFONE 1. Insira novamente:");
+    //     fgets(novoU.numeros_telefone[0], MAX_PHONE, stdin);
+    //     novoU.numeros_telefone[0][strcspn(novoU.numeros_telefone[0], "\n")] = '\0';
+    // }
+    
+    // #================ NUMERO CELULAR 2
     printf("\nNOVO - Insira o Segundo Telefone: ");
     fgets(novoU.numeros_telefone[1], MAX_PHONE, stdin);
     novoU.numeros_telefone[1][strcspn(novoU.numeros_telefone[1], "\n")] = '\0';
+    // while(AUXILIAR_contarString(novoU.numeros_telefone[1]) != MAX_PHONE - 1) {
+    //     printf("\nAVISO: Tamanho inválido para TELEFONE 2. Insira novamente:");
+    //     fgets(novoU.numeros_telefone[1], MAX_PHONE, stdin);
+    //     novoU.numeros_telefone[1][strcspn(novoU.numeros_telefone[1], "\n")] = '\0';
+    // }
 
-    // strcpy((*DB)[*qntd].contas_email[0], "carlos@example.com");
+    // #================ EMAIL 1
     printf("\nNOVO - Insira o Primeiro Email: ");
     fgets(novoU.contas_email[0], MAX_STRING, stdin);
     novoU.contas_email[0][strcspn(novoU.contas_email[0], "\n")] = '\0';
 
-    // strcpy((*DB)[*qntd].contas_email[1], "c.silva@trab.com");
+    // #================ EMAIL 2
     printf("\nNOVO - Insira o Segundo Email: ");
     fgets(novoU.contas_email[1], MAX_STRING, stdin);
     novoU.contas_email[1][strcspn(novoU.contas_email[1], "\n")] = '\0';
 
-    // strcpy((*DB)[*qntd].profissao, "Engenheiro");
+    // #================ PROFISSAO
     printf("\nNOVO - Insira a Profissao: ");
     fgets(novoU.profissao, MAX_STRING, stdin);
     novoU.profissao[strcspn(novoU.profissao, "\n")] = '\0';
 
+    // #================ NASCIMENTO
     printf("\nNOVO - (Data de Nascimento)\nInsira Dia: ");
-    scanf("%d", novoU.data_nascimento[0]);
+    scanf("%d", &novoU.data_nascimento[0]);
 
+    // Será tratado posteriormente com datas corretas!
     printf("\nInsira Mês: ");
-    scanf("%d", novoU.data_nascimento[1]);
+    scanf("%d", &novoU.data_nascimento[1]);
 
     printf("\nInsira Ano: ");
-    scanf("%d", novoU.data_nascimento[2]);
+    scanf("%d", &novoU.data_nascimento[2]);
 
     (*DB)[*qntd] = novoU;
     (*qntd)++;
