@@ -34,6 +34,7 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
 void listar_todos_usuarios(struct Usuario *DB, int qntd);
 void listar_especifico_usuario(struct Usuario *DB, int qntd);
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
+int deletar_usuario(struct Usuario *DB, int *qntd);
 void salvar_usuarios(struct Usuario *DB, int qntd);
 int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
 
@@ -56,7 +57,7 @@ int AUXILIAR_confirmar() {
     printf("Tem certeza que deseja realizar esta operação? (S/N)");
     scanf(" %c", &str);
     if (str == 's' || str == 'S') return 1;
-    return 0; 
+    return 0;
 }
 
 void AUXILIAR_limparBuffer() {
@@ -125,6 +126,12 @@ void submenu_usuarios() {
                 break;
             case 3:
                 inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);  
+                break;
+            case 4:
+                inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);  
+                break;
+            case 5:
+                deletar_usuario(DB_Usuarios, &qntd_elementos);
                 break;
         }
     } while (opt != 6);
@@ -362,19 +369,26 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
 
     printf("Usuario inserido com sucesso.\n");
 }
-void deletar_usuario(struct Usuario *DB, int *qntd) {
+int deletar_usuario(struct Usuario *DB, int *qntd) {
     char CPF_busca[MAX_CPF];
     printf("Digite o CPF do cliente que deseja excluir: ");
-    scanf("%s", cpf);
+    scanf("%s", CPF_busca);
 
-    int i = buscar_index_usuario(CPF_busca, *DB, *qntd)
+    int i = buscar_index_usuario(CPF_busca, DB, *qntd);
     if (i == -1) {
         printf("\nAVISO: CPF inexistente.");
-        return;
+        return 0;
     }
 
     printf("Cliente a ser excluido...\nUsuario: %s - CPF: %s\n", DB[i].nome, DB[i].CPF);
-    AUXILIAR_confirmar()
+    if (AUXILIAR_confirmar()) {
+        for (i; i < *qntd -1; i++) {
+            DB[i] = DB[i+1];
+        }
+
+        (*qntd)--;
+        return 1;
+    }
 }
 
 

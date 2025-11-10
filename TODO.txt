@@ -1,3 +1,4 @@
 • Formatar CPF
 • Verificações de Inserir
 • Return das funções para apresentar ao usuário
+• Correção dos problemas de buffer
