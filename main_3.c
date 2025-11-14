@@ -34,6 +34,7 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
 void listar_todos_usuarios(struct Usuario *DB, int qntd);
 void listar_especifico_usuario(struct Usuario *DB, int qntd);
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
+int alterar_usuario(struct Usuario *DB, int *qntd);
 int deletar_usuario(struct Usuario *DB, int *qntd);
 void salvar_usuarios(struct Usuario *DB, int qntd);
 int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
@@ -199,18 +200,41 @@ void listar_todos_usuarios(struct Usuario *DB, int qntd) {
     int i;
 
     for (i = 0; i < qntd; i++) {
-        printf("\nPOSICAO %d:\n", i);
-        printf("CPF: %s\n", DB[i].CPF);
-        printf("Nome: %s\n", DB[i].nome);
-        printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
-        printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
-        printf("Email 1: %s\n", DB[i].contas_email[0]);
-        printf("Email 2: %s\n", DB[i].contas_email[1]);
-        printf("Profissao: %s\n", DB[i].profissao);
-        printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
-        printf("CEP: %s\n", DB[i].CEP);
-        printf("Rua: %s\n", DB[i].nome_rua);
-        printf("Numero casa: %s\n", DB[i].numero_casa);
+        // printf("\nPOSICAO %d:\n", i);
+        // printf("CPF: %s\n", DB[i].CPF);
+        // printf("Nome: %s\n", DB[i].nome);
+        // printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
+        // printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
+        // printf("Email 1: %s\n", DB[i].contas_email[0]);
+        // printf("Email 2: %s\n", DB[i].contas_email[1]);
+        // printf("Profissao: %s\n", DB[i].profissao);
+        // printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
+        // printf("CEP: %s\n", DB[i].CEP);
+        // printf("Rua: %s\n", DB[i].nome_rua);
+        // printf("Numero casa: %s\n", DB[i].numero_casa);
+
+        printf(
+            "\n\033[1;33m===== REGISTRO %d =====\033[0m\n"
+            "\033[36mCPF:            \033[32m%s\033[0m\n"
+            "\033[36mNome:           \033[32m%s\033[0m\n"
+            "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2:     \033[32m%s\033[0m\n"
+            "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2:        \033[32m%s\033[0m\n"
+            "\033[36mProfissao:      \033[32m%s\033[0m\n"
+            "\033[36mNascimento:     \033[32m%02d/%02d/%04d\033[0m\n"
+            "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua:            \033[32m%s\033[0m \033[36m| Numero casa:    \033[32m%s\033[0m\n",
+            i,
+            DB[i].CPF,
+            DB[i].nome,
+            DB[i].numeros_telefone[0],
+            DB[i].numeros_telefone[1],
+            DB[i].contas_email[0],
+            DB[i].contas_email[1],
+            DB[i].profissao,
+            DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2],
+            DB[i].CEP,
+            DB[i].nome_rua,
+            DB[i].numero_casa
+        );
     }
 }
 
@@ -238,18 +262,28 @@ void listar_especifico_usuario(struct Usuario *DB, int qntd) {
     // printf("VALOR DE I: %d", i);
     printf("Usuario encontrado.\n");
 
-    printf("\nPOSICAO %d:\n", i);
-    printf("CPF: %s\n", DB[i].CPF);
-    printf("Nome: %s\n", DB[i].nome);
-    printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
-    printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
-    printf("Email 1: %s\n", DB[i].contas_email[0]);
-    printf("Email 2: %s\n", DB[i].contas_email[1]);
-    printf("Profissao: %s\n", DB[i].profissao);
-    printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
-    printf("CEP: %s\n", DB[i].CEP);
-    printf("Rua: %s\n", DB[i].nome_rua);
-    printf("Numero casa: %s\n", DB[i].numero_casa);
+    printf(
+        "\n\033[1;33m===== REGISTRO %d =====\033[0m\n"
+        "\033[36mCPF:            \033[32m%s\033[0m\n"
+        "\033[36mNome:           \033[32m%s\033[0m\n"
+        "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2:     \033[32m%s\033[0m\n"
+        "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2:        \033[32m%s\033[0m\n"
+        "\033[36mProfissao:      \033[32m%s\033[0m\n"
+        "\033[36mNascimento:     \033[32m%02d/%02d/%04d\033[0m\n"
+        "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua:            \033[32m%s\033[0m \033[36m| Numero casa:    \033[32m%s\033[0m\n",
+        i,
+        DB[i].CPF,
+        DB[i].nome,
+        DB[i].numeros_telefone[0],
+        DB[i].numeros_telefone[1],
+        DB[i].contas_email[0],
+        DB[i].contas_email[1],
+        DB[i].profissao,
+        DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2],
+        DB[i].CEP,
+        DB[i].nome_rua,
+        DB[i].numero_casa
+    );
 }
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     
@@ -369,6 +403,30 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
 
     printf("Usuario inserido com sucesso.\n");
 }
+int alterar_usuario(struct Usuario *DB, int *qntd) {
+    char CPF_busca[MAX_CPF];
+    printf("Digite o CPF do cliente que deseja excluir: ");
+    scanf("%s", CPF_busca);
+
+    int i = buscar_index_usuario(CPF_busca, DB, *qntd);
+    if (i == -1) {
+        printf("\nAVISO: CPF não encontrado.");
+        return 0;
+    }
+
+    printf("\nPOSICAO %d:\n", i);
+    printf("CPF: %s\n", DB[i].CPF);
+    printf("Nome: %s\n", DB[i].nome);
+    printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
+    printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
+    printf("Email 1: %s\n", DB[i].contas_email[0]);
+    printf("Email 2: %s\n", DB[i].contas_email[1]);
+    printf("Profissao: %s\n", DB[i].profissao);
+    printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
+    printf("CEP: %s\n", DB[i].CEP);
+    printf("Rua: %s\n", DB[i].nome_rua);
+    printf("Numero casa: %s\n", DB[i].numero_casa);
+}
 int deletar_usuario(struct Usuario *DB, int *qntd) {
     char CPF_busca[MAX_CPF];
     printf("Digite o CPF do cliente que deseja excluir: ");
@@ -376,7 +434,7 @@ int deletar_usuario(struct Usuario *DB, int *qntd) {
 
     int i = buscar_index_usuario(CPF_busca, DB, *qntd);
     if (i == -1) {
-        printf("\nAVISO: CPF inexistente.");
+        printf("\nAVISO: CPF não encontrado.");
         return 0;
     }
 
@@ -390,9 +448,6 @@ int deletar_usuario(struct Usuario *DB, int *qntd) {
         return 1;
     }
 }
-
-
-
 
 void salvar_usuarios(struct Usuario *DB, int qntd) {
     FILE *fUser;
