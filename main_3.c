@@ -5,7 +5,7 @@
 #define MAX_CPF 12 // Ex.: 12345678900\0
 #define MAX_STRING 100
 #define MAX_PHONE 13 // Ex.: 16994317717\0
-#define MAX_NROHOUSE 5
+#define MAX_NROHOUSE 6
 #define MAX_CEP 10
 
 #define MIN_CAPACITY 5
@@ -34,7 +34,7 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
 void listar_todos_usuarios(struct Usuario *DB, int qntd);
 void listar_especifico_usuario(struct Usuario *DB, int qntd);
 void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade);
-int alterar_usuario(struct Usuario *DB, int *qntd);
+int alterar_usuario(struct Usuario *DB, int qntd);
 int deletar_usuario(struct Usuario *DB, int *qntd);
 void salvar_usuarios(struct Usuario *DB, int qntd);
 int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
@@ -55,7 +55,7 @@ int AUXILIAR_contarString(char str[]) {
 
 int AUXILIAR_confirmar() {
     char str;
-    printf("Tem certeza que deseja realizar esta operação? (S/N)");
+    printf("Tem certeza que deseja realizar esta operacao? (S/N)");
     scanf(" %c", &str);
     if (str == 's' || str == 'S') return 1;
     return 0;
@@ -105,13 +105,13 @@ void submenu_usuarios() {
     // Optei por não utilizar ponteiro de ponteiro por ser mais intuitivo para mim. E por questões didáticas.
     DB_Usuarios = carregar_usuarios(&qntd_elementos, &capacidade_total);
 
-    printf("#-------- MENU DE USUARIOS. --------#\n");
     do {
+        printf("#-------- MENU DE USUARIOS. --------#\n");
         printf("1. Listar Todos os Usuarios\n");
         printf("2. Listar Usuario Especifico\n");
         printf("3. Inserir Usuario\n");
-        printf("4. Alterar Usuario [NAO IMPLEMENTADO]\n");
-        printf("5. Excluir Usuario [NAO IMPLEMENTADO]\n");
+        printf("4. Alterar Usuario [WIP]\n");
+        printf("5. Excluir Usuario\n");
         printf("6. Sair\n");
         printf("Escolha sua opcao: ");
         scanf("%d", &opt);
@@ -129,7 +129,7 @@ void submenu_usuarios() {
                 inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);  
                 break;
             case 4:
-                inserir_usuario(&DB_Usuarios, &qntd_elementos, &capacidade_total);  
+                alterar_usuario(DB_Usuarios, qntd_elementos);
                 break;
             case 5:
                 deletar_usuario(DB_Usuarios, &qntd_elementos);
@@ -200,28 +200,15 @@ void listar_todos_usuarios(struct Usuario *DB, int qntd) {
     int i;
 
     for (i = 0; i < qntd; i++) {
-        // printf("\nPOSICAO %d:\n", i);
-        // printf("CPF: %s\n", DB[i].CPF);
-        // printf("Nome: %s\n", DB[i].nome);
-        // printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
-        // printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
-        // printf("Email 1: %s\n", DB[i].contas_email[0]);
-        // printf("Email 2: %s\n", DB[i].contas_email[1]);
-        // printf("Profissao: %s\n", DB[i].profissao);
-        // printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
-        // printf("CEP: %s\n", DB[i].CEP);
-        // printf("Rua: %s\n", DB[i].nome_rua);
-        // printf("Numero casa: %s\n", DB[i].numero_casa);
-
         printf(
             "\n\033[1;33m===== REGISTRO %d =====\033[0m\n"
             "\033[36mCPF:            \033[32m%s\033[0m\n"
             "\033[36mNome:           \033[32m%s\033[0m\n"
-            "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2:     \033[32m%s\033[0m\n"
-            "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2:        \033[32m%s\033[0m\n"
+            "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2: \033[32m%s\033[0m\n"
+            "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2: \033[32m%s\033[0m\n"
             "\033[36mProfissao:      \033[32m%s\033[0m\n"
             "\033[36mNascimento:     \033[32m%02d/%02d/%04d\033[0m\n"
-            "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua:            \033[32m%s\033[0m \033[36m| Numero casa:    \033[32m%s\033[0m\n",
+            "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua: \033[32m%s\033[0m \033[36m| Numero casa: \033[32m%s\033[0m\n",
             i,
             DB[i].CPF,
             DB[i].nome,
@@ -266,11 +253,11 @@ void listar_especifico_usuario(struct Usuario *DB, int qntd) {
         "\n\033[1;33m===== REGISTRO %d =====\033[0m\n"
         "\033[36mCPF:            \033[32m%s\033[0m\n"
         "\033[36mNome:           \033[32m%s\033[0m\n"
-        "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2:     \033[32m%s\033[0m\n"
-        "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2:        \033[32m%s\033[0m\n"
+        "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2: \033[32m%s\033[0m\n"
+        "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2: \033[32m%s\033[0m\n"
         "\033[36mProfissao:      \033[32m%s\033[0m\n"
         "\033[36mNascimento:     \033[32m%02d/%02d/%04d\033[0m\n"
-        "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua:            \033[32m%s\033[0m \033[36m| Numero casa:    \033[32m%s\033[0m\n",
+        "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua: \033[32m%s\033[0m \033[36m| Numero casa: \033[32m%s\033[0m\n",
         i,
         DB[i].CPF,
         DB[i].nome,
@@ -403,30 +390,166 @@ void inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
 
     printf("Usuario inserido com sucesso.\n");
 }
-int alterar_usuario(struct Usuario *DB, int *qntd) {
+int alterar_usuario(struct Usuario *DB, int qntd) {
     char CPF_busca[MAX_CPF];
-    printf("Digite o CPF do cliente que deseja excluir: ");
+    printf("Digite o CPF do cliente que deseja alterar:\n");
     scanf("%s", CPF_busca);
+    AUXILIAR_limparBuffer();
 
-    int i = buscar_index_usuario(CPF_busca, DB, *qntd);
+    int i = buscar_index_usuario(CPF_busca, DB, qntd);
     if (i == -1) {
         printf("\nAVISO: CPF não encontrado.");
         return 0;
     }
 
-    printf("\nPOSICAO %d:\n", i);
-    printf("CPF: %s\n", DB[i].CPF);
-    printf("Nome: %s\n", DB[i].nome);
-    printf("Telefone 1: %s\n", DB[i].numeros_telefone[0]);
-    printf("Telefone 2: %s\n", DB[i].numeros_telefone[1]);
-    printf("Email 1: %s\n", DB[i].contas_email[0]);
-    printf("Email 2: %s\n", DB[i].contas_email[1]);
-    printf("Profissao: %s\n", DB[i].profissao);
-    printf("Nascimento: %d/%d/%d\n", DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2]);
-    printf("CEP: %s\n", DB[i].CEP);
-    printf("Rua: %s\n", DB[i].nome_rua);
-    printf("Numero casa: %s\n", DB[i].numero_casa);
+    printf("Usuario encontrado.");
+    printf(
+        "\n\033[1;33m===== REGISTRO %d =====\033[0m\n"
+        "\033[36mCPF:            \033[32m%s\033[0m\n"
+        "\033[36mNome:           \033[32m%s\033[0m\n"
+        "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2: \033[32m%s\033[0m\n"
+        "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2: \033[32m%s\033[0m\n"
+        "\033[36mProfissao:      \033[32m%s\033[0m\n"
+        "\033[36mNascimento:     \033[32m%02d/%02d/%04d\033[0m\n"
+        "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua: \033[32m%s\033[0m \033[36m| Numero casa: \033[32m%s\033[0m\n",
+        i,
+        DB[i].CPF,
+        DB[i].nome,
+        DB[i].numeros_telefone[0],
+        DB[i].numeros_telefone[1],
+        DB[i].contas_email[0],
+        DB[i].contas_email[1],
+        DB[i].profissao,
+        DB[i].data_nascimento[0], DB[i].data_nascimento[1], DB[i].data_nascimento[2],
+        DB[i].CEP,
+        DB[i].nome_rua,
+        DB[i].numero_casa
+    );
+
+    // Clone independente do usuário em questão a ser editado. Variáveis para edição.
+    struct Usuario temp; char tempCPF[MAX_CPF]; int opt;
+    temp = DB[i];
+
+    do{
+       printf("Qual informacao deseja alterar?\n1. CPF\n2. Nome\n3. Telefones\n4. Emails\n5. Profissao\n6. Data Nascimento\n7. Endereco\n8. Sair\n >__ ");
+       scanf("%d", &opt);
+       AUXILIAR_limparBuffer();
+       printf("OPCAO USADA: %d", opt);
+
+        switch (opt) {
+            case 1: 
+                printf("Novo CPF: "); 
+                scanf("%s", tempCPF); 
+                AUXILIAR_limparBuffer(); 
+                
+                if (buscar_index_usuario(tempCPF, DB, qntd) != -1) { 
+                    printf("\nAVISO: CPF já existe."); 
+                } 
+                else { 
+                    strcpy(temp.CPF, tempCPF); 
+                }
+
+                break;
+            case 2:
+                printf("Novo nome: ");
+                fgets(temp.nome, MAX_STRING, stdin);
+                temp.nome[strcspn(temp.nome, "\n")] = '\0';
+                break;
+            case 3:
+                printf("Novo telefone 1: ");
+                fgets(temp.numeros_telefone[0], MAX_PHONE, stdin);
+                temp.numeros_telefone[0][strcspn(temp.numeros_telefone[0], "\n")] = '\0';
+
+                printf("Novo telefone 2: ");
+                fgets(temp.numeros_telefone[1], MAX_PHONE, stdin);
+                temp.numeros_telefone[1][strcspn(temp.numeros_telefone[1], "\n")] = '\0';
+                break;
+            case 4:
+                printf("Novo email 1: ");
+                fgets(temp.contas_email[0], MAX_STRING, stdin);
+                temp.contas_email[0][strcspn(temp.contas_email[0], "\n")] = '\0';
+
+                printf("Novo email 2: ");
+                fgets(temp.contas_email[1], MAX_STRING, stdin);
+                temp.contas_email[1][strcspn(temp.contas_email[1], "\n")] = '\0';
+                break;
+            case 5:
+                printf("Nova profissão: ");
+                fgets(temp.profissao, MAX_STRING, stdin);
+                temp.profissao[strcspn(temp.profissao, "\n")] = '\0';
+                break;
+            case 6:
+                
+                printf("\nNovo dia: ");
+                scanf("%d", &temp.data_nascimento[0]);
+                while (temp.data_nascimento[0] < 1 || temp.data_nascimento[0] > 31) {
+                    printf("\nData invalida. Digite novamente: ");
+                    scanf("%d", &temp.data_nascimento[0]);
+                }
+                
+                printf("\nNovo mes: ");
+                scanf("%d", &temp.data_nascimento[1]);
+                while (temp.data_nascimento[1] < 1 || temp.data_nascimento[1] > 12) {
+                    printf("\nData invalida. Digite novamente: ");
+                    scanf("%d", &temp.data_nascimento[1]);
+                }
+
+                printf("\nNovo ano: ");
+                scanf("%d", &temp.data_nascimento[2]);
+                while (temp.data_nascimento[2] < 1) {
+                    printf("\nData invalida. Digite novamente: ");
+                    scanf("%d", &temp.data_nascimento[2]);
+                }
+
+                AUXILIAR_limparBuffer();
+                break;
+
+            case 7:
+                printf("Nova rua: ");
+                fgets(temp.nome_rua, MAX_STRING, stdin);
+                temp.nome_rua[strcspn(temp.nome_rua, "\n")] = '\0';
+
+                printf("Novo número da casa: ");
+                fgets(temp.numero_casa, 5, stdin);
+                temp.numero_casa[strcspn(temp.numero_casa, "\n")] = '\0';
+
+                printf("Novo CEP: ");
+                fgets(temp.CEP, MAX_CEP, stdin);
+                temp.CEP[strcspn(temp.CEP, "\n")] = '\0';
+                break;
+        }
+    } while (opt != 8);
+
+    printf(
+        "\n\033[1;33m===== USUARIO ALTERADO =====\033[0m\n"
+        "\033[36mCPF:            \033[32m%s\033[0m\n"
+        "\033[36mNome:           \033[32m%s\033[0m\n"
+        "\033[36mTelefone 1:     \033[32m%s\033[0m \033[36m| Telefone 2: \033[32m%s\033[0m\n"
+        "\033[36mEmail 1:        \033[32m%s\033[0m \033[36m| Email 2: \033[32m%s\033[0m\n"
+        "\033[36mProfissao:      \033[32m%s\033[0m\n"
+        "\033[36mNascimento:     \033[32m%02d/%02d/%04d\033[0m\n"
+        "\033[36mCEP:            \033[32m%s\033[0m \033[36m| Rua: \033[32m%s\033[0m \033[36m| Numero casa: \033[32m%s\033[0m\n",
+        temp.CPF,
+        temp.nome,
+        temp.numeros_telefone[0],
+        temp.numeros_telefone[1],
+        temp.contas_email[0],
+        temp.contas_email[1],
+        temp.profissao,
+        temp.data_nascimento[0], temp.data_nascimento[1], temp.data_nascimento[2],
+        temp.CEP,
+        temp.nome_rua,
+        temp.numero_casa
+    );
+
+    printf("Alterar o usuario?\n");
+    if (AUXILIAR_confirmar()) {
+        DB[i] = temp;
+        return 1;
+    }
+    return 0;
 }
+
 int deletar_usuario(struct Usuario *DB, int *qntd) {
     char CPF_busca[MAX_CPF];
     printf("Digite o CPF do cliente que deseja excluir: ");
