@@ -68,7 +68,6 @@ void AUXILIAR_limparBuffer() {
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
     printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 0.1\n");
-
     menu_principal();
 }
 
@@ -106,15 +105,13 @@ void submenu_usuarios() {
         printf("1. Listar Todos os Usuarios\n");
         printf("2. Listar Usuario Especifico\n");
         printf("3. Inserir Usuario\n");
-        printf("4. Alterar Usuario [WIP]\n");
+        printf("4. Alterar Usuario\n");
         printf("5. Excluir Usuario\n");
         printf("6. Sair\n");
         printf("Escolha sua opcao: ");
         scanf("%d", &opt);
 
         switch(opt) {
-            // Criar retornos para verificação por IF!
-            // Lidar com EXITS para return na maioria das vezes.
             case 1 :
                 if (listar_todos_usuarios(DB_Usuarios, qntd_elementos) == 0) {
                     printf("Nenhum usuário cadastrado. Retornando...\n");
@@ -238,7 +235,6 @@ int listar_todos_usuarios(struct Usuario *DB, int qntd) {
 
     return i;
 }
-
 int listar_especifico_usuario(struct Usuario *DB, int qntd) {
     char cpfBusca[MAX_CPF];
     int i;
@@ -306,6 +302,12 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     // #================ CPF
     printf("NOVO - Insira o CPF: ");
     fgets(novoU.CPF, sizeof(novoU.CPF), stdin);
+
+    // Checa se o \n foi lido. Se não foi (strchr retorna NULL).
+    // Significa que a entrada excedeu o buffer de novoU.CPF, e o \n ainda está no stdin.
+    if (strchr(novoU.CPF, '\n') == NULL) {
+        AUXILIAR_limparBuffer(); // Limpa o \n restante
+    }
     novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
 
     if (AUXILIAR_contarString(novoU.CPF) != (MAX_CPF - 1)) {
@@ -314,7 +316,7 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     }
 
     if (buscar_index_usuario(novoU.CPF, *DB, *qntd) != -1) {
-        printf("\nAVISO: CPF digitado já existe.\n");
+        printf("\nAVISO: CPF digitado ja existe.\n");
         return 0;
     }
     
@@ -327,13 +329,11 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     printf("\nNOVO - Insira o CEP: ");
     fgets(novoU.CEP, MAX_CEP, stdin);
     novoU.CEP[strcspn(novoU.CEP, "\n")] = '\0';
-    AUXILIAR_contarString(novoU.CEP);
 
     // #================ RUA NOME
     printf("\nNOVO - Insira a Rua: ");
     fgets(novoU.nome_rua, MAX_STRING, stdin);
     novoU.nome_rua[strcspn(novoU.nome_rua, "\n")] = '\0';
-    AUXILIAR_contarString(novoU.nome_rua);
 
     // #================ CASA NUMERO
     printf("\nNOVO - Insira o Numero da Casa: ");
@@ -403,7 +403,7 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
 
     int i = buscar_index_usuario(CPF_busca, DB, qntd);
     if (i == -1) {
-        printf("\nAVISO: CPF não encontrado.");
+        printf("\nAVISO: CPF nao encontrado.");
         return 0;
     }
 
@@ -445,7 +445,11 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
                 printf("Novo CPF: "); 
                 fgets(tempCPF, sizeof(tempCPF), stdin);
                 tempCPF[strcspn(tempCPF, "\n")] = '\0';
-            
+
+                if (strchr(tempCPF, '\n') == NULL) {
+                    AUXILIAR_limparBuffer(); // Limpa o \n restante
+                }
+
                 if (AUXILIAR_contarString(tempCPF) != (MAX_CPF - 1)) {
                     printf("\nAVISO: Formatacao invalida de CPF. ");
                 } else {
@@ -482,7 +486,7 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
                 temp.contas_email[1][strcspn(temp.contas_email[1], "\n")] = '\0';
                 break;
             case 5:
-                printf("Nova profissão: ");
+                printf("Nova profissao: ");
                 fgets(temp.profissao, MAX_STRING, stdin);
                 temp.profissao[strcspn(temp.profissao, "\n")] = '\0';
                 break;
@@ -491,21 +495,21 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
                 printf("\nNovo dia: ");
                 scanf("%d", &temp.data_nascimento[0]);
                 while (temp.data_nascimento[0] < 1 || temp.data_nascimento[0] > 31) {
-                    printf("\nData invalida. Digite novamente: ");
+                    printf("\nData invalida. Digite novamente o dia: ");
                     scanf("%d", &temp.data_nascimento[0]);
                 }
                 
                 printf("\nNovo mes: ");
                 scanf("%d", &temp.data_nascimento[1]);
                 while (temp.data_nascimento[1] < 1 || temp.data_nascimento[1] > 12) {
-                    printf("\nData invalida. Digite novamente: ");
+                    printf("\nData invalida. Digite novamente o mes: ");
                     scanf("%d", &temp.data_nascimento[1]);
                 }
 
                 printf("\nNovo ano: ");
                 scanf("%d", &temp.data_nascimento[2]);
                 while (temp.data_nascimento[2] < 0) {
-                    printf("\nData invalida. Digite novamente: ");
+                    printf("\nData invalida. Digite novamente o ano: ");
                     scanf("%d", &temp.data_nascimento[2]);
                 }
 
@@ -517,7 +521,7 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
                 fgets(temp.nome_rua, MAX_STRING, stdin);
                 temp.nome_rua[strcspn(temp.nome_rua, "\n")] = '\0';
 
-                printf("Novo número da casa: ");
+                printf("Novo numero da casa: ");
                 fgets(temp.numero_casa, 5, stdin);
                 temp.numero_casa[strcspn(temp.numero_casa, "\n")] = '\0';
 
