@@ -16,7 +16,7 @@ struct Usuario {
     char CPF[MAX_CPF];
     char nome[MAX_STRING];
     char nome_rua[MAX_STRING];
-    char numero_casa[5];
+    char numero_casa[MAX_NROHOUSE];
     char CEP[MAX_CEP];
     char numeros_telefone[2][MAX_PHONE];
     char contas_email[2][MAX_STRING];
@@ -65,6 +65,19 @@ void AUXILIAR_limparBuffer() {
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
+void AUXILIAR_lerStringRobusto(char *str) {
+    // ROBUSTEZ DE CHECAGEM! Checa se o \n foi lido. Se não foi (strchr retorna NULL).
+    // Significa que a entrada excedeu o buffer e o \n ainda está no stdin.
+
+    // Se o '\n' tiver sido lido, houve espaço suficiente e não houve overflow. Se não for, o restante da linha ficou no buffer.
+    if (strchr(str, '\n') == NULL) {
+        AUXILIAR_limparBuffer();
+    }
+    
+    // 1. Remove o '\n' (substituindo-o por '\0'). Se não houver um '\n' o strcspn substitui o '\0' por um '\0', logo, tudo certo.
+    str[strcspn(str, "\n")] = '\0';
+}
+
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
     printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 0.1\n");
@@ -108,6 +121,7 @@ void submenu_usuarios() {
         printf("4. Alterar Usuario\n");
         printf("5. Excluir Usuario\n");
         printf("6. Sair\n");
+
         printf("Escolha sua opcao: ");
         scanf("%d", &opt);
 
@@ -239,13 +253,13 @@ int listar_especifico_usuario(struct Usuario *DB, int qntd) {
     char cpfBusca[MAX_CPF];
     int i;
 
-    getchar();
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
     printf("Insira o CPF de busca: ");
     fgets(cpfBusca, sizeof(cpfBusca), stdin);
     cpfBusca[strcspn(cpfBusca, "\n")] = '\0';
 
     while (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
-        printf("\nAVISO: Formatacao invalida de CPF.\n Insira novamente: ");
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n Insira novamente: ");
         fgets(cpfBusca, sizeof(cpfBusca), stdin);
         cpfBusca[strcspn(cpfBusca, "\n")] = '\0';
     }
@@ -254,7 +268,6 @@ int listar_especifico_usuario(struct Usuario *DB, int qntd) {
         return i;
     }
 
-    // printf("VALOR DE I: %d", i);
     printf("Usuario encontrado.\n");
 
     printf(
@@ -297,73 +310,71 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
     }
 
     struct Usuario novoU;
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
 
-    AUXILIAR_limparBuffer();
     // #================ CPF
     printf("NOVO - Insira o CPF: ");
     fgets(novoU.CPF, sizeof(novoU.CPF), stdin);
-
-    // Checa se o \n foi lido. Se não foi (strchr retorna NULL).
-    // Significa que a entrada excedeu o buffer de novoU.CPF, e o \n ainda está no stdin.
-    if (strchr(novoU.CPF, '\n') == NULL) {
-        AUXILIAR_limparBuffer(); // Limpa o \n restante
-    }
-    novoU.CPF[strcspn(novoU.CPF, "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.CPF);
 
     if (AUXILIAR_contarString(novoU.CPF) != (MAX_CPF - 1)) {
-        printf("\nAVISO: Formatacao invalida de CPF. ");
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF. ");
         return 0;
     }
 
     if (buscar_index_usuario(novoU.CPF, *DB, *qntd) != -1) {
-        printf("\nAVISO: CPF digitado ja existe.\n");
+        printf("\n\033[32mAVISO:\033[0m CPF digitado ja existe.\n");
         return 0;
     }
     
     // #================ NOME
     printf("CPF valido.\nNOVO - Insira o Nome: ");
     fgets(novoU.nome, MAX_STRING, stdin);
-    novoU.nome[strcspn(novoU.nome, "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.nome);
     
     // #================ CEP
     printf("\nNOVO - Insira o CEP: ");
     fgets(novoU.CEP, MAX_CEP, stdin);
-    novoU.CEP[strcspn(novoU.CEP, "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.CEP);
 
     // #================ RUA NOME
     printf("\nNOVO - Insira a Rua: ");
     fgets(novoU.nome_rua, MAX_STRING, stdin);
-    novoU.nome_rua[strcspn(novoU.nome_rua, "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.nome_rua);
+
 
     // #================ CASA NUMERO
     printf("\nNOVO - Insira o Numero da Casa: ");
     fgets(novoU.numero_casa, MAX_NROHOUSE, stdin);
-    novoU.numero_casa[strcspn(novoU.numero_casa, "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.numero_casa);
     
     // #================ NUMERO CELULAR 1
     printf("\nNOVO - Insira o Primeiro Telefone: ");
     fgets(novoU.numeros_telefone[0], MAX_PHONE, stdin);
-    novoU.numeros_telefone[0][strcspn(novoU.numeros_telefone[0], "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.numeros_telefone[0]);
+
     
     // #================ NUMERO CELULAR 2
     printf("\nNOVO - Insira o Segundo Telefone: ");
     fgets(novoU.numeros_telefone[1], MAX_PHONE, stdin);
-    novoU.numeros_telefone[1][strcspn(novoU.numeros_telefone[1], "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.numeros_telefone[1]);
+
 
     // #================ EMAIL 1
     printf("\nNOVO - Insira o Primeiro Email: ");
     fgets(novoU.contas_email[0], MAX_STRING, stdin);
-    novoU.contas_email[0][strcspn(novoU.contas_email[0], "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.contas_email[0]);
 
     // #================ EMAIL 2
     printf("\nNOVO - Insira o Segundo Email: ");
     fgets(novoU.contas_email[1], MAX_STRING, stdin);
-    novoU.contas_email[1][strcspn(novoU.contas_email[1], "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.contas_email[1]);
 
     // #================ PROFISSAO
     printf("\nNOVO - Insira a Profissao: ");
     fgets(novoU.profissao, MAX_STRING, stdin);
-    novoU.profissao[strcspn(novoU.profissao, "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(novoU.profissao);
+
 
     // #================ NASCIMENTO
     printf("\nNOVO - (Data de Nascimento)\nInsira Dia: ");
@@ -374,7 +385,7 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
         scanf("%d", &novoU.data_nascimento[0]);
     }
                 
-    printf("\nInsira Mes: ");
+    printf("Insira Mes: ");
     scanf("%d", &novoU.data_nascimento[1]);
     
     while (novoU.data_nascimento[1] < 1 || novoU.data_nascimento[1] > 12) {
@@ -382,7 +393,7 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
         scanf("%d",  &novoU.data_nascimento[1]);
     }
 
-    printf("\nInsira Ano: ");
+    printf("Insira Ano: ");
     scanf("%d", &novoU.data_nascimento[2]);
 
     while (novoU.data_nascimento[2] < 0) {
@@ -397,13 +408,14 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
 }
 int alterar_usuario(struct Usuario *DB, int qntd) {
     char CPF_busca[MAX_CPF];
-    printf("Digite o CPF do cliente que deseja alterar:\n");
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    printf("Digite o CPF do cliente que deseja alterar: ");
     scanf("%s", CPF_busca);
-    AUXILIAR_limparBuffer();
 
     int i = buscar_index_usuario(CPF_busca, DB, qntd);
     if (i == -1) {
-        printf("\nAVISO: CPF nao encontrado.");
+        printf("\n\033[32mAVISO:\033[0m CPF nao encontrado.");
         return 0;
     }
 
@@ -436,7 +448,7 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
     temp = DB[i];
 
     do{
-       printf("Qual informacao deseja alterar?\n1. CPF\n2. Nome\n3. Telefones\n4. Emails\n5. Profissao\n6. Data Nascimento\n7. Endereco\n8. Sair\n >__ ");
+       printf("Qual informacao deseja alterar?\n1. CPF\n2. Nome\n3. Telefones\n4. Emails\n5. Profissao\n6. Data Nascimento\n7. Endereco\n8. Sair\n>__ ");
        scanf("%d", &opt);
        AUXILIAR_limparBuffer();
 
@@ -444,17 +456,13 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
             case 1: 
                 printf("Novo CPF: "); 
                 fgets(tempCPF, sizeof(tempCPF), stdin);
-                tempCPF[strcspn(tempCPF, "\n")] = '\0';
-
-                if (strchr(tempCPF, '\n') == NULL) {
-                    AUXILIAR_limparBuffer(); // Limpa o \n restante
-                }
+                AUXILIAR_lerStringRobusto(tempCPF);
 
                 if (AUXILIAR_contarString(tempCPF) != (MAX_CPF - 1)) {
-                    printf("\nAVISO: Formatacao invalida de CPF. ");
+                    printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF. ");
                 } else {
                     if (buscar_index_usuario(tempCPF, DB, qntd) != -1) { 
-                        printf("\nAVISO: CPF já existe."); 
+                        printf("\n\033[32mAVISO:\033[0m CPF já existe."); 
                     } 
                     else { 
                         strcpy(temp.CPF, tempCPF);
@@ -465,30 +473,30 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
             case 2:
                 printf("Novo nome: ");
                 fgets(temp.nome, MAX_STRING, stdin);
-                temp.nome[strcspn(temp.nome, "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.nome);
                 break;
             case 3:
                 printf("Novo telefone 1: ");
                 fgets(temp.numeros_telefone[0], MAX_PHONE, stdin);
-                temp.numeros_telefone[0][strcspn(temp.numeros_telefone[0], "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.numeros_telefone[0]);
 
                 printf("Novo telefone 2: ");
                 fgets(temp.numeros_telefone[1], MAX_PHONE, stdin);
-                temp.numeros_telefone[1][strcspn(temp.numeros_telefone[1], "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.numeros_telefone[1]);
                 break;
             case 4:
                 printf("Novo email 1: ");
                 fgets(temp.contas_email[0], MAX_STRING, stdin);
-                temp.contas_email[0][strcspn(temp.contas_email[0], "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.contas_email[0]);
 
                 printf("Novo email 2: ");
                 fgets(temp.contas_email[1], MAX_STRING, stdin);
-                temp.contas_email[1][strcspn(temp.contas_email[1], "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.contas_email[1]);
                 break;
             case 5:
                 printf("Nova profissao: ");
                 fgets(temp.profissao, MAX_STRING, stdin);
-                temp.profissao[strcspn(temp.profissao, "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.profissao);
                 break;
             case 6:
                 
@@ -499,14 +507,14 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
                     scanf("%d", &temp.data_nascimento[0]);
                 }
                 
-                printf("\nNovo mes: ");
+                printf("Novo mes: ");
                 scanf("%d", &temp.data_nascimento[1]);
                 while (temp.data_nascimento[1] < 1 || temp.data_nascimento[1] > 12) {
                     printf("\nData invalida. Digite novamente o mes: ");
                     scanf("%d", &temp.data_nascimento[1]);
                 }
 
-                printf("\nNovo ano: ");
+                printf("Novo ano: ");
                 scanf("%d", &temp.data_nascimento[2]);
                 while (temp.data_nascimento[2] < 0) {
                     printf("\nData invalida. Digite novamente o ano: ");
@@ -519,15 +527,15 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
             case 7:
                 printf("Nova rua: ");
                 fgets(temp.nome_rua, MAX_STRING, stdin);
-                temp.nome_rua[strcspn(temp.nome_rua, "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.nome_rua);
 
                 printf("Novo numero da casa: ");
-                fgets(temp.numero_casa, 5, stdin);
-                temp.numero_casa[strcspn(temp.numero_casa, "\n")] = '\0';
+                fgets(temp.numero_casa, MAX_NROHOUSE, stdin);
+                AUXILIAR_lerStringRobusto(temp.numero_casa);
 
                 printf("Novo CEP: ");
                 fgets(temp.CEP, MAX_CEP, stdin);
-                temp.CEP[strcspn(temp.CEP, "\n")] = '\0';
+                AUXILIAR_lerStringRobusto(temp.CEP);
                 break;
         }
     } while (opt != 8);
@@ -564,12 +572,14 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
 
 int deletar_usuario(struct Usuario *DB, int *qntd) {
     char CPF_busca[MAX_CPF];
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
     printf("Digite o CPF do cliente que deseja excluir: ");
     scanf("%s", CPF_busca);
 
     int i = buscar_index_usuario(CPF_busca, DB, *qntd);
     if (i == -1) {
-        printf("\nAVISO: CPF não encontrado.");
+        printf("\n\033[32mAVISO:\033[0m CPF não encontrado.");
         return 0;
     }
 
@@ -605,14 +615,12 @@ int buscar_index_usuario(char key[], struct Usuario *DB, int qntd) {
     int i = 0;
     int FLAG_indexLocalized = 0;
 
-    // Busca linear para casos simples. Ou talvez tenha que ir lá para fora, e verificar se já foi ordenado.
-    if (qntd <= MIN_CAPACITY) {
-        while (!FLAG_indexLocalized && i < qntd) {
-            if(strcmp(DB[i].CPF, key) == 0) {
-                FLAG_indexLocalized = 1;
-            } else {
-                i++;
-            }
+    // Busca linear.
+    while (!FLAG_indexLocalized && i < qntd) {
+        if(strcmp(DB[i].CPF, key) == 0) {
+            FLAG_indexLocalized = 1;
+        } else {
+            i++;
         }
     }
 

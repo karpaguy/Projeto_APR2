@@ -1,6 +1,4 @@
 • Formatar CPF
 • Verificações de Inserir (DONE)
 • Return das funções para apresentar ao usuário (DONE)
-• Correção dos problemas de buffer (DONE/WIP - precisa de mais testes)
-
-• Busca diferenciada quando tiver muitos usuarios.
+• Correção dos problemas de buffer (DONE)
