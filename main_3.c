@@ -411,7 +411,7 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
     AUXILIAR_limparBuffer(); // Limpeza inicial.
 
     printf("Digite o CPF do cliente que deseja alterar: ");
-    scanf("%s", CPF_busca);
+    scanf("%s", CPF_busca); // Pode ser scanf, caso não digite no tamanho certo ele não vai localizar e não segue.
 
     int i = buscar_index_usuario(CPF_busca, DB, qntd);
     if (i == -1) {
@@ -569,13 +569,12 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
     }
     return 0;
 }
-
 int deletar_usuario(struct Usuario *DB, int *qntd) {
     char CPF_busca[MAX_CPF];
     AUXILIAR_limparBuffer(); // Limpeza inicial.
 
     printf("Digite o CPF do cliente que deseja excluir: ");
-    scanf("%s", CPF_busca);
+    scanf("%s", CPF_busca); // Pode ser scanf, caso não digite no tamanho certo ele não vai localizar e não segue.
 
     int i = buscar_index_usuario(CPF_busca, DB, *qntd);
     if (i == -1) {
@@ -584,6 +583,11 @@ int deletar_usuario(struct Usuario *DB, int *qntd) {
     }
 
     printf("Cliente a ser excluido...\nUsuario: %s - CPF: %s\n", DB[i].nome, DB[i].CPF);
+    if (*qntd == 0) {
+        (*qntd)--;
+        // O usuário que fica não será lido e será sobrescrito numa próxima iteração se inserir.
+    }
+
     if (AUXILIAR_confirmar()) {
         for (i; i < *qntd -1; i++) {
             DB[i] = DB[i+1];
