@@ -32,8 +32,8 @@ struct Livro {
     char titulo[MAX_STRING];
     char genero[MAX_STRING];
     char autores[MAX_AUTORES][MAX_STRING];
-    int numero_paginas
-}
+    int numero_paginas;
+};
 
 // ==================== INICALIZAÇÃO (protótipo das funções) ====================
 // Declarar a função para ser inicializada, evitando possíveis erros.
@@ -53,7 +53,10 @@ int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
 void submenu_livros();
 struct Livro *carregar_livros(int *qntd, int *capacidade);
 
+int listar_todos_livros(struct Livro *DB, int qntd);
+int inserir_livro(struct Livro **DB, int *qntd, int *capacidade);
 void salvar_livros(struct Livro *DB, int qntd);
+int buscar_index_livro(char key[], struct Livro *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
@@ -650,7 +653,7 @@ int buscar_index_usuario(char key[], struct Usuario *DB, int qntd) {
 // ==================== SUBPROGRAMA USUÁRIOS ====================
 void submenu_livros() {
     int opt;
-    struct Usuario *DB_Livros = NULL;
+    struct Livro *DB_Livros = NULL;
     int qntd_elementos = 0, capacidade_total = 0;
 
     // Optei por não utilizar ponteiro de ponteiro por ser mais intuitivo para mim. E por questões didáticas.
@@ -767,10 +770,84 @@ int listar_todos_livros(struct Livro *DB, int qntd) {
     return i;
 }
 
+int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
+    if ((*qntd) == (*capacidade)) {
+        (*capacidade)++;
+        
+        // Fazendo com um tempDB para não dar realloc direto no DB, caso aconteça NULL, vazamos a memória inteira.
+        struct Livro *tempDB = realloc(*DB, (*capacidade) * sizeof(struct Livro));
+        if (tempDB == NULL) {
+            return 0;
+        }
+        
+        *DB = tempDB;
+    }
+
+    struct Livro novoL; int qtnd_autores = 0;
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    // #================ ISBN
+    printf("NOVO - Insira o ISBN: ");
+    fgets(novoL.ISBN, sizeof(novoL.ISBN), stdin);
+    AUXILIAR_lerStringRobusto(novoL.ISBN);
+
+    if (AUXILIAR_contarString(novoL.ISBN) != (MAX_ISBN - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN. ");
+        return 0;
+    }
+
+    if (buscar_index_livro(novoL.ISBN, *DB, *qntd) != -1) {
+        printf("\n\033[32mAVISO:\033[0m ISBN digitado ja existe.\n");
+        return 0;
+    }
+    
+
+    // #================ TITULO
+    printf("ISBN valido.\nNOVO - Insira o Titulo: ");
+    fgets(novoL.titulo, MAX_STRING, stdin);
+    AUXILIAR_lerStringRobusto(novoL.titulo);
+
+    // #================ GENERO
+    printf("\nNOVO - Insira o Genero: ");
+    fgets(novoL.titulo, MAX_STRING, stdin);
+    AUXILIAR_lerStringRobusto(novoL.titulo);
+
+    // #================ AUTORES
+    printf("\nNOVO - Quantos autores deseja inserir? (1 a %d): ", MAX_AUTORES);
+    scanf("%d", &qtnd_autores);
+    AUXILIAR_limparBuffer();
+
+    if (qtnd_autores < 1 || qtnd_autores > MAX_AUTORES) {
+        printf("\n\033[32mAVISO:\033[0m Quantidade inválida.\n");
+        return 0;
+    }
+
+    // limpa todos os autores do struct antes
+    for (int i = 0; i < MAX_AUTORES; i++) {
+        novoL.autores[i][0] = '\0';
+    }
+
+    printf("\nInsira os autores:\n");
+    for (int i = 0; i < qtnd_autores; i++) {
+        printf("Autor %d: ", i + 1);
+        fgets(novoL.autores[i], MAX_STRING, stdin);
+        AUXILIAR_lerStringRobusto(novoL.autores[i]);
+    }
+
+    // #================ PAGINAS
+    printf("\nNOVO - Insira o Total de Páginas: ");
+    scanf("%d", &novoL.numero_paginas);
+
+    (*DB)[*qntd] = novoL;
+    (*qntd)++;
+
+    return 1;
+}
+
 void salvar_livros(struct Livro *DB, int qntd) {
     FILE *fBook;
 
-    if ((fBook = fopen("dados_livros.dat.dat", "wb")) == NULL) {
+    if ((fBook = fopen("dados_livros.dat", "wb")) == NULL) {
         printf("Erro: falha ao salvar livros.");
         exit(1);
     }
@@ -781,4 +858,18 @@ void salvar_livros(struct Livro *DB, int qntd) {
     }
     fclose(fBook);
 }
+int buscar_index_livro(char key[], struct Livro *DB, int qntd) {
+    int i = 0;
+    int FLAG_indexLocalized = 0;
 
+    // Busca linear.
+    while (!FLAG_indexLocalized && i < qntd) {
+        if(strcmp(DB[i].ISBN, key) == 0) {
+            FLAG_indexLocalized = 1;
+        } else {
+            i++;
+        }
+    }
+
+    return (FLAG_indexLocalized) ? i : -1;
+}
