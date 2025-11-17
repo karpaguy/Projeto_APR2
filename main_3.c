@@ -8,6 +8,9 @@
 #define MAX_NROHOUSE 6
 #define MAX_CEP 10
 
+#define MAX_ISBN 14 // Ex: 9788533302273\0
+#define MAX_AUTORES 10 // O livro com maior quantidade de autores possui 188 colaboradores. Uau.
+
 #define MIN_CAPACITY 5
 
 // ==================== STRUCTS ====================
@@ -24,12 +27,20 @@ struct Usuario {
     int data_nascimento[3];
 };
 
+struct Livro {
+    char ISBN[MAX_ISBN];
+    char titulo[MAX_STRING];
+    char genero[MAX_STRING];
+    char autores[MAX_AUTORES][MAX_STRING];
+    int numero_paginas
+}
+
 // ==================== INICALIZAÇÃO (protótipo das funções) ====================
 // Declarar a função para ser inicializada, evitando possíveis erros.
 // Além de ficar bem mais fácil a visualização do código enorme abaixo.
 void menu_principal();
-void submenu_usuarios();
 
+void submenu_usuarios();
 struct Usuario *carregar_usuarios(int *qntd, int *capacidade);
 int listar_todos_usuarios(struct Usuario *DB, int qntd);
 int listar_especifico_usuario(struct Usuario *DB, int qntd);
@@ -38,6 +49,11 @@ int alterar_usuario(struct Usuario *DB, int qntd);
 int deletar_usuario(struct Usuario *DB, int *qntd);
 void salvar_usuarios(struct Usuario *DB, int qntd);
 int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
+
+void submenu_livros();
+struct Livro *carregar_livros(int *qntd, int *capacidade);
+
+void salvar_livros(struct Livro *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
@@ -99,6 +115,9 @@ void menu_principal() {
         switch(opt) {
             case 1:
                 submenu_usuarios();
+                break;
+            case 2:
+                submenu_livros();
                 break;
         }
     } while (opt != 5);
@@ -218,7 +237,6 @@ struct Usuario *carregar_usuarios(int *qntd, int *capacidade) {
     fclose(fUser);
     return DB;
 }
-
 int listar_todos_usuarios(struct Usuario *DB, int qntd) {
     int i;
 
@@ -599,7 +617,6 @@ int deletar_usuario(struct Usuario *DB, int *qntd) {
 
     return 0;
 }
-
 void salvar_usuarios(struct Usuario *DB, int qntd) {
     FILE *fUser;
 
@@ -614,7 +631,6 @@ void salvar_usuarios(struct Usuario *DB, int qntd) {
     }
     fclose(fUser);
 }
-
 int buscar_index_usuario(char key[], struct Usuario *DB, int qntd) {
     int i = 0;
     int FLAG_indexLocalized = 0;
@@ -630,3 +646,139 @@ int buscar_index_usuario(char key[], struct Usuario *DB, int qntd) {
 
     return (FLAG_indexLocalized) ? i : -1;
 }
+
+// ==================== SUBPROGRAMA USUÁRIOS ====================
+void submenu_livros() {
+    int opt;
+    struct Usuario *DB_Livros = NULL;
+    int qntd_elementos = 0, capacidade_total = 0;
+
+    // Optei por não utilizar ponteiro de ponteiro por ser mais intuitivo para mim. E por questões didáticas.
+    DB_Livros = carregar_livros(&qntd_elementos, &capacidade_total);
+
+    do {
+        printf("#-------- MENU DE LIVROS. --------#\n");
+        printf("1. Listar Todos os Livros\n");
+        printf("2. Listar Livro Especifico [WIP]\n");
+        printf("3. Inserir Livro\n");
+        printf("4. Alterar Livro\n");
+        printf("5. Excluir Livro\n");
+        printf("6. Sair\n");
+
+        printf("Escolha sua opcao: ");
+        scanf("%d", &opt);
+
+        switch(opt) {
+            case 1 :
+                if (listar_todos_livros(DB_Livros, qntd_elementos) == 0) {
+                    printf("Nenhum livro cadastrado. Retornando...\n");
+                };
+                break;
+        }
+    } while (opt != 6);
+
+    salvar_livros(DB_Livros, qntd_elementos);
+
+    if(DB_Livros != NULL) free(DB_Livros);
+    printf("Retornando...\n\n");
+}
+
+// ---------→→→→→ Por ordem de função chamada dentro do Subprograma!
+struct Livro *carregar_livros(int *qntd, int *capacidade) {
+    FILE *fBook = fopen("dados_livros.dat", "rb");
+    struct Livro *DB = NULL;
+
+    if (fBook  == NULL ) {
+        printf("Arquivo de Livros nao encontrado!\nGerando arquivos iniciais de Livro...\n\n");
+        *capacidade = MIN_CAPACITY;
+        *qntd = 0;
+
+        DB = (struct Livro*)malloc((*capacidade) * sizeof(struct Livro));
+        if (DB == NULL) {
+            printf("Erro: falha na alocacao de memoria.");
+            exit(1);
+        }
+
+        // Princípio de evitar excesso de tabulação.
+        if ((fBook = fopen("dados_livros.dat", "wb")) == NULL) {
+            printf("Erro: falha na criacao do arquivo.");
+            exit(1);
+        }
+
+        fclose(fBook);
+        return DB;
+    }
+
+    fseek(fBook, 0, SEEK_END);
+    long tamanho = ftell(fBook);
+    if (tamanho == -1) {
+        printf("Erro: falha ao determinar tamanho do arquivo.");
+        exit(0);
+    }
+
+    *qntd = tamanho / sizeof(struct Livro);
+    rewind(fBook);
+
+    *capacidade = (*qntd > MIN_CAPACITY) ? *qntd : MIN_CAPACITY;
+
+    DB = (struct Livro*)malloc((*capacidade) * sizeof(struct Livro));
+    if (DB == NULL) {
+        printf("Erro: falha na alocacao de memoria.");
+        exit(1);
+    }
+
+    if (*qntd > 0) {
+        fread(DB, sizeof(struct Livro), *qntd, fBook);
+        printf("Dados carregados.\n");
+    }
+
+    fclose(fBook);
+    return DB;
+}
+
+int listar_todos_livros(struct Livro *DB, int qntd) {
+    int i;
+    int a;
+
+    for (i = 0; i < qntd; i++) {
+        printf(
+            "\n\033[1;33m===== LIVRO %d =====\033[0m\n"
+            "\033[36mISBN:           \033[32m%s\033[0m\n"
+            "\033[36mTitulo:         \033[32m%s\033[0m\n"
+            "\033[36mGenero:         \033[32m%s\033[0m\n"
+            "\033[36mNumero Paginas: \033[32m%d\033[0m\n"
+            "\033[36mAutores:\033[0m\n",
+            i,
+            DB[i].ISBN,
+            DB[i].titulo,
+            DB[i].genero,
+            DB[i].numero_paginas
+        );
+
+        // imprime lista de autores
+        for (a = 0; a < MAX_AUTORES; a++) {
+            // imprime apenas autores não vazios
+            if (DB[i].autores[a][0] != '\0') {
+                printf("    \033[36m- \033[32m%s\033[0m\n", DB[i].autores[a]);
+            }
+        }
+    }
+
+    return i;
+}
+
+void salvar_livros(struct Livro *DB, int qntd) {
+    FILE *fBook;
+
+    if ((fBook = fopen("dados_livros.dat.dat", "wb")) == NULL) {
+        printf("Erro: falha ao salvar livros.");
+        exit(1);
+    }
+
+    if (qntd > 0) {
+        fwrite(DB, sizeof(struct Livro), qntd, fBook);
+        printf("Livros salvos com sucesso.\n");
+    }
+    fclose(fBook);
+}
+
