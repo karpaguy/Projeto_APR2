@@ -52,9 +52,11 @@ int buscar_index_usuario(char key[], struct Usuario *DB, int qntd);
 
 void submenu_livros();
 struct Livro *carregar_livros(int *qntd, int *capacidade);
-
 int listar_todos_livros(struct Livro *DB, int qntd);
+int listar_especifico_livro(struct Livro *DB, int qntd);
 int inserir_livro(struct Livro **DB, int *qntd, int *capacidade);
+int alterar_livro(struct Livro *DB, int qntd);
+int deletar_livro(struct Livro *DB, int *qntd);
 void salvar_livros(struct Livro *DB, int qntd);
 int buscar_index_livro(char key[], struct Livro *DB, int qntd);
 
@@ -277,12 +279,12 @@ int listar_especifico_usuario(struct Usuario *DB, int qntd) {
     AUXILIAR_limparBuffer(); // Limpeza inicial.
     printf("Insira o CPF de busca: ");
     fgets(cpfBusca, sizeof(cpfBusca), stdin);
-    cpfBusca[strcspn(cpfBusca, "\n")] = '\0';
+    AUXILIAR_lerStringRobusto(cpfBusca);
 
     while (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
         printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n Insira novamente: ");
         fgets(cpfBusca, sizeof(cpfBusca), stdin);
-        cpfBusca[strcspn(cpfBusca, "\n")] = '\0';
+        AUXILIAR_lerStringRobusto(cpfBusca);
     }
 
     if ((i = buscar_index_usuario(cpfBusca, DB, qntd)) == -1) {
@@ -599,22 +601,22 @@ int deletar_usuario(struct Usuario *DB, int *qntd) {
 
     int i = buscar_index_usuario(CPF_busca, DB, *qntd);
     if (i == -1) {
-        printf("\n\033[32mAVISO:\033[0m CPF não encontrado.");
+        printf("\n\033[32mAVISO:\033[0m CPF nao encontrado.");
         return 0;
     }
 
     printf("Cliente a ser excluido...\nUsuario: %s - CPF: %s\n", DB[i].nome, DB[i].CPF);
-    if (*qntd == 0) {
-        (*qntd)--;
-        // O usuário que fica não será lido e será sobrescrito numa próxima iteração se inserir.
-    }
-
     if (AUXILIAR_confirmar()) {
-        for (i; i < *qntd -1; i++) {
-            DB[i] = DB[i+1];
-        }
+        if (*qntd == 0) {
+            (*qntd)--;
+            // O usuário que fica não será lido e será sobrescrito numa próxima iteração se inserir.
+        } else {
+            for (i; i < *qntd -1; i++) {
+                DB[i] = DB[i+1];
+            }
 
-        (*qntd)--;
+            (*qntd)--;
+        }
         return 1;
     }
 
@@ -675,6 +677,32 @@ void submenu_livros() {
             case 1 :
                 if (listar_todos_livros(DB_Livros, qntd_elementos) == 0) {
                     printf("Nenhum livro cadastrado. Retornando...\n");
+                };
+                break;
+            case 2:
+                if (listar_especifico_livro(DB_Livros, qntd_elementos) == -1) {
+                    printf("Usuario nao encontrado. Retornando...\n");
+                };
+                break;
+            case 3:
+                if (inserir_livro(&DB_Livros, &qntd_elementos, &capacidade_total)) {
+                    printf("Livro inserido com sucesso. Retornando...\n");
+                } else {
+                    printf("Erro ao inserir livro. Retornando...\n");
+                }
+                break;
+            case 4:
+                if (alterar_livro(DB_Livros, qntd_elementos)) {
+                    printf("Livro alterado com sucesso. Retornando...\n");
+                } else {
+                    printf("Livro nao pode ser alterado. Retornando...\n");
+                };
+                break;
+            case 5:
+                if (deletar_livro(DB_Livros, &qntd_elementos)) {
+                    printf("Livro deletado com sucesso. Retornando...\n");
+                } else {
+                    printf("Livro nao pode ser deletado. Retornando...\n");
                 };
                 break;
         }
@@ -769,7 +797,163 @@ int listar_todos_livros(struct Livro *DB, int qntd) {
 
     return i;
 }
+int listar_especifico_livro(struct Livro *DB, int qntd) {
+    char isbnBusca[MAX_ISBN];
+    int i; int a;
 
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+    printf("Insira o ISBN de busca: ");
+    fgets(isbnBusca, sizeof(isbnBusca), stdin);
+    AUXILIAR_lerStringRobusto(isbnBusca);
+
+    while (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n Insira novamente: ");
+        fgets(isbnBusca, sizeof(isbnBusca), stdin);
+        AUXILIAR_lerStringRobusto(isbnBusca);
+    }
+
+    if ((i = buscar_index_livro(isbnBusca, DB, qntd)) == -1) {
+        return i;
+    }
+
+    printf("ISBN encontrado.\n");
+    printf(
+        "\n\033[1;33m===== LIVRO %d =====\033[0m\n"
+        "\033[36mISBN:           \033[32m%s\033[0m\n"
+        "\033[36mTitulo:         \033[32m%s\033[0m\n"
+        "\033[36mGenero:         \033[32m%s\033[0m\n"
+        "\033[36mNumero Paginas: \033[32m%d\033[0m\n"
+        "\033[36mAutores:\033[0m\n",
+        i,
+        DB[i].ISBN,
+        DB[i].titulo,
+        DB[i].genero,
+        DB[i].numero_paginas
+    );
+
+    // imprime lista de autores
+    for (a = 0; a < MAX_AUTORES; a++) {
+        // imprime apenas autores não vazios
+        if (DB[i].autores[a][0] != '\0') {
+            printf("\033[36m- \033[32m%s\033[0m\n", DB[i].autores[a]);
+        }
+    }
+}
+int alterar_livro(struct Livro *DB, int qntd) {
+    char isbnBusca[MAX_ISBN];
+    int a;
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    printf("Digite o ISBN do livro que deseja alterar: ");
+    scanf("%s", isbnBusca); // Pode ser scanf, caso não digite no tamanho certo ele não vai localizar e não segue.
+
+    int i = buscar_index_livro(isbnBusca, DB, qntd);
+    if (i == -1) {
+        printf("\n\033[32mAVISO:\033[0m ISBN nao encontrado.");
+        return 0;
+    }
+
+    printf("ISBN encontrado.\n");
+    printf(
+        "\n\033[1;33m===== LIVRO %d =====\033[0m\n"
+        "\033[36mISBN:           \033[32m%s\033[0m\n"
+        "\033[36mTitulo:         \033[32m%s\033[0m\n"
+        "\033[36mGenero:         \033[32m%s\033[0m\n"
+        "\033[36mNumero Paginas: \033[32m%d\033[0m\n"
+        "\033[36mAutores:\033[0m\n",
+        i,
+        DB[i].ISBN,
+        DB[i].titulo,
+        DB[i].genero,
+        DB[i].numero_paginas
+    );
+
+    // imprime lista de autores
+    for (a = 0; a < MAX_AUTORES; a++) {
+        if (DB[i].autores[a][0] != '\0') {
+            printf("\033[36m- \033[32m%s\033[0m\n", DB[i].autores[a]);
+        }
+    }
+
+    // Clone independente do livro em questão a ser editado. Variáveis para edição.
+    struct Livro temp; char tempISBN[MAX_ISBN]; int opt;
+    temp = DB[i];
+
+    do{
+       printf("Qual informacao deseja alterar?\n1. ISBN\n2. Titulo\n3. Genero\n4. Numero de Paginas\n5. Autores\n6. Sair\n>__ ");
+       scanf("%d", &opt);
+       AUXILIAR_limparBuffer();
+
+        switch (opt) {
+            case 1: 
+                printf("Novo ISBN: "); 
+                fgets(tempISBN, sizeof(tempISBN), stdin);
+                AUXILIAR_lerStringRobusto(tempISBN);
+
+                if (AUXILIAR_contarString(tempISBN) != (MAX_ISBN - 1)) {
+                    printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN. ");
+                } else {
+                    if (buscar_index_livro(tempISBN, DB, qntd) != -1) { 
+                        printf("\n\033[32mAVISO:\033[0m ISBN já existe."); 
+                    } 
+                    else { 
+                        strcpy(temp.ISBN, tempISBN);
+                    }
+                }
+                break;
+            case 2:
+                printf("Novo titulo: ");
+                fgets(temp.titulo, MAX_STRING, stdin);
+                AUXILIAR_lerStringRobusto(temp.titulo);
+                break;
+            case 3:
+                printf("Novo genero: ");
+                fgets(temp.genero, MAX_STRING, stdin);
+                AUXILIAR_lerStringRobusto(temp.genero);
+                break;
+            case 4:
+                printf("Novo total de paginas: ");
+                scanf("%d", &temp.numero_paginas);
+                break;
+            case 5:
+            // O que aocntece se eu deixar vazio a passagem de um... será que ele preenche como "\0"?
+                for (a = 0; a < MAX_AUTORES; a++) {
+                    if (temp.autores[a][0] != '\0') {
+                        printf("Novo Autor %d: ", a+1);
+                        fgets(temp.autores[a], MAX_STRING, stdin);
+                        AUXILIAR_lerStringRobusto(temp.autores[a]);
+                    }
+                }
+        }
+    } while (opt != 6);
+
+    printf(
+        "\n\033[1;33m===== LIVRO %d =====\033[0m\n"
+        "\033[36mISBN:           \033[32m%s\033[0m\n"
+        "\033[36mTitulo:         \033[32m%s\033[0m\n"
+        "\033[36mGenero:         \033[32m%s\033[0m\n"
+        "\033[36mNumero Paginas: \033[32m%d\033[0m\n"
+        "\033[36mAutores:\033[0m\n",
+        i,
+        temp.ISBN,
+        temp.titulo,
+        temp.genero,
+        temp.numero_paginas
+    );
+
+    // imprime lista de autores
+    for (a = 0; a < MAX_AUTORES; a++) {
+        if (temp.autores[a][0] != '\0') {
+            printf("\033[36m- \033[32m%s\033[0m\n", temp.autores[a]);
+        }
+    }
+    printf("Alterar o livro?\n");
+    if (AUXILIAR_confirmar()) {
+        DB[i] = temp;
+        return 1;
+    }
+    return 0;
+}
 int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
     if ((*qntd) == (*capacidade)) {
         (*capacidade)++;
@@ -801,7 +985,6 @@ int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
         return 0;
     }
     
-
     // #================ TITULO
     printf("ISBN valido.\nNOVO - Insira o Titulo: ");
     fgets(novoL.titulo, MAX_STRING, stdin);
@@ -822,7 +1005,7 @@ int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
         return 0;
     }
 
-    // limpa todos os autores do struct antes
+    // Todos os autores ficam "zerados", útil para print/verificações posteriomente. String vazia!
     for (int i = 0; i < MAX_AUTORES; i++) {
         novoL.autores[i][0] = '\0';
     }
@@ -843,7 +1026,36 @@ int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
 
     return 1;
 }
+int deletar_livro(struct Livro *DB, int *qntd) {
+    char isbnBusca[MAX_ISBN];
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
 
+    printf("Digite o ISBN do livro que deseja excluir: ");
+    scanf("%s", isbnBusca); // Pode ser scanf, caso não digite no tamanho certo ele não vai localizar e não segue.
+
+    int i = buscar_index_livro(isbnBusca, DB, *qntd);
+    if (i == -1) {
+        printf("\n\033[32mAVISO:\033[0m ISBN nao encontrado.");
+        return 0;
+    }
+
+    printf("Livro a ser excluido...\nISBN: %s - Titulo: %s\n", DB[i].ISBN, DB[i].titulo);
+    if (AUXILIAR_confirmar()) {
+        if (*qntd == 0) {
+            (*qntd)--;
+            // O livro que fica não será lido e será sobrescrito numa próxima iteração se inserir.
+        } else {
+            for (i; i < *qntd -1; i++) {
+                DB[i] = DB[i+1];
+            }
+
+            (*qntd)--;
+        }
+        return 1;
+    }
+
+    return 0;
+}
 void salvar_livros(struct Livro *DB, int qntd) {
     FILE *fBook;
 
