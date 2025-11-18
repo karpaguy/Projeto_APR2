@@ -2,3 +2,4 @@
 • Verificações de Inserir (DONE)
 • Return das funções para apresentar ao usuário (DONE)
 • Correção dos problemas de buffer (DONE)
+• Remover loops de "inserir id valido"

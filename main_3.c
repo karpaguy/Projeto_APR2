@@ -281,10 +281,9 @@ int listar_especifico_usuario(struct Usuario *DB, int qntd) {
     fgets(cpfBusca, sizeof(cpfBusca), stdin);
     AUXILIAR_lerStringRobusto(cpfBusca);
 
-    while (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n Insira novamente: ");
-        fgets(cpfBusca, sizeof(cpfBusca), stdin);
-        AUXILIAR_lerStringRobusto(cpfBusca);
+    if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
+        return -1;
     }
 
     if ((i = buscar_index_usuario(cpfBusca, DB, qntd)) == -1) {
@@ -664,7 +663,7 @@ void submenu_livros() {
     do {
         printf("#-------- MENU DE LIVROS. --------#\n");
         printf("1. Listar Todos os Livros\n");
-        printf("2. Listar Livro Especifico [WIP]\n");
+        printf("2. Listar Livro Especifico\n");
         printf("3. Inserir Livro\n");
         printf("4. Alterar Livro\n");
         printf("5. Excluir Livro\n");
@@ -806,10 +805,9 @@ int listar_especifico_livro(struct Livro *DB, int qntd) {
     fgets(isbnBusca, sizeof(isbnBusca), stdin);
     AUXILIAR_lerStringRobusto(isbnBusca);
 
-    while (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n Insira novamente: ");
-        fgets(isbnBusca, sizeof(isbnBusca), stdin);
-        AUXILIAR_lerStringRobusto(isbnBusca);
+    if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
+        return -1;
     }
 
     if ((i = buscar_index_livro(isbnBusca, DB, qntd)) == -1) {
@@ -841,7 +839,7 @@ int listar_especifico_livro(struct Livro *DB, int qntd) {
 }
 int alterar_livro(struct Livro *DB, int qntd) {
     char isbnBusca[MAX_ISBN];
-    int a;
+    int a; int aut_max;
     AUXILIAR_limparBuffer(); // Limpeza inicial.
 
     printf("Digite o ISBN do livro que deseja alterar: ");
@@ -917,13 +915,33 @@ int alterar_livro(struct Livro *DB, int qntd) {
                 break;
             case 5:
             // O que aocntece se eu deixar vazio a passagem de um... será que ele preenche como "\0"?
-                for (a = 0; a < MAX_AUTORES; a++) {
-                    if (temp.autores[a][0] != '\0') {
-                        printf("Novo Autor %d: ", a+1);
+                printf("Quantos autores serao editados?\n\033[32mOBS:\033[0m Deixe um numero menor para remover autores, e um maior para adicionar.\n>__");
+                scanf("%d", &aut_max);
+                AUXILIAR_limparBuffer();
+
+                if (aut_max < 1 || aut_max > 10) {
+                    printf("Quantia invalida de autores.\n");
+                    break;
+                }
+
+                for (a = 0; a < aut_max; a++) {
+                    printf("%do Autor: ", a+1);
+                    fgets(temp.autores[a], MAX_STRING, stdin);
+                    AUXILIAR_lerStringRobusto(temp.autores[a]);
+
+                    // Impede de tentar zerar os autores.
+                    while(AUXILIAR_contarString(temp.autores[a]) == 0) {
+                        printf("\033[32mAVISO:\033[0m Nome do autor nao pode ser vazio.\nInsira novamente: ");
                         fgets(temp.autores[a], MAX_STRING, stdin);
                         AUXILIAR_lerStringRobusto(temp.autores[a]);
                     }
                 }
+
+                // Apaga autores restantes.
+                for (a = aut_max; a < MAX_AUTORES; a++) {
+                    temp.autores[a][0] = '\0';
+                }
+                break;
         }
     } while (opt != 6);
 
@@ -992,8 +1010,8 @@ int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
 
     // #================ GENERO
     printf("\nNOVO - Insira o Genero: ");
-    fgets(novoL.titulo, MAX_STRING, stdin);
-    AUXILIAR_lerStringRobusto(novoL.titulo);
+    fgets(novoL.genero, MAX_STRING, stdin);
+    AUXILIAR_lerStringRobusto(novoL.genero);
 
     // #================ AUTORES
     printf("\nNOVO - Quantos autores deseja inserir? (1 a %d): ", MAX_AUTORES);
