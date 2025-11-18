@@ -35,6 +35,14 @@ struct Livro {
     int numero_paginas;
 };
 
+struct Emprestimo {
+    char CPF_Pessoa[MAX_CPF];
+    char ISBN_Livro[MAX_ISBN];
+    int data_retirada[3];
+    int data_devolucao[3];
+    int multa_diaria;
+};
+
 // ==================== INICALIZAÇÃO (protótipo das funções) ====================
 // Declarar a função para ser inicializada, evitando possíveis erros.
 // Além de ficar bem mais fácil a visualização do código enorme abaixo.
@@ -59,6 +67,10 @@ int alterar_livro(struct Livro *DB, int qntd);
 int deletar_livro(struct Livro *DB, int *qntd);
 void salvar_livros(struct Livro *DB, int qntd);
 int buscar_index_livro(char key[], struct Livro *DB, int qntd);
+
+void submenu_emprestimos();
+struct Emprestimo *carregar_emprestimos(int *qntd, int *capacidade);
+void salvar_emprestimos(struct Emprestimo *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
@@ -123,6 +135,9 @@ void menu_principal() {
                 break;
             case 2:
                 submenu_livros();
+                break;
+            case 3:
+                submenu_emprestimos();
                 break;
         }
     } while (opt != 5);
@@ -765,7 +780,6 @@ struct Livro *carregar_livros(int *qntd, int *capacidade) {
     fclose(fBook);
     return DB;
 }
-
 int listar_todos_livros(struct Livro *DB, int qntd) {
     int i;
     int a;
@@ -1102,4 +1116,131 @@ int buscar_index_livro(char key[], struct Livro *DB, int qntd) {
     }
 
     return (FLAG_indexLocalized) ? i : -1;
+}
+
+// ==================== SUBPROGRAMA EMPRESTIMOS ====================
+void submenu_emprestimos() {
+    int opt;
+    struct Emprestimo *DB_Emprestimos = NULL;
+    int qntd_elementos = 0, capacidade_total = 0;
+
+    // Optei por não utilizar ponteiro de ponteiro por ser mais intuitivo para mim. E por questões didáticas.
+    DB_Emprestimos = carregar_emprestimos(&qntd_elementos, &capacidade_total);
+
+    do {
+        printf("#-------- MENU DE EMPRESTIMOS. --------#\n");
+        printf("1. Listar Todos os Emprestimos\n");
+        printf("2. Listar Emprestimo Especifico\n");
+        printf("3. Inserir Emprestimo\n");
+        printf("4. Alterar Emprestimo\n");
+        printf("5. Excluir Emprestimo\n");
+        printf("6. Sair\n");
+
+        printf("Escolha sua opcao: ");
+        scanf("%d", &opt);
+
+        switch(opt) {
+            case 1 :
+                // if (listar_todos_livros(DB_Livros, qntd_elementos) == 0) {
+                //     printf("Nenhum livro cadastrado. Retornando...\n");
+                // };
+                break;
+            case 2:
+                // if (listar_especifico_livro(DB_Livros, qntd_elementos) == -1) {
+                //     printf("Usuario nao encontrado. Retornando...\n");
+                // };
+                break;
+            case 3:
+                // if (inserir_livro(&DB_Livros, &qntd_elementos, &capacidade_total)) {
+                //     printf("Livro inserido com sucesso. Retornando...\n");
+                // } else {
+                //     printf("Erro ao inserir livro. Retornando...\n");
+                // }
+                break;
+            case 4:
+                // if (alterar_livro(DB_Livros, qntd_elementos)) {
+                //     printf("Livro alterado com sucesso. Retornando...\n");
+                // } else {
+                //     printf("Livro nao pode ser alterado. Retornando...\n");
+                // };
+                break;
+            case 5:
+                // if (deletar_livro(DB_Livros, &qntd_elementos)) {
+                //     printf("Livro deletado com sucesso. Retornando...\n");
+                // } else {
+                //     printf("Livro nao pode ser deletado. Retornando...\n");
+                // };
+                break;
+        }
+    } while (opt != 6);
+
+    salvar_emprestimos(DB_Emprestimos, qntd_elementos);
+
+    if(DB_Emprestimos != NULL) free(DB_Emprestimos);
+    printf("Retornando...\n\n");
+}
+struct Emprestimo *carregar_emprestimos(int *qntd, int *capacidade) {
+    FILE *fEmpre = fopen("dados_emprestimos.dat", "rb");
+    struct Emprestimo *DB = NULL;
+
+    if (fEmpre  == NULL ) {
+        printf("Arquivo de Emprestimos nao encontrado!\nGerando arquivos iniciais de Emprestimo...\n\n");
+        *capacidade = MIN_CAPACITY;
+        *qntd = 0;
+
+        DB = (struct Emprestimo*)malloc((*capacidade) * sizeof(struct Emprestimo));
+        if (DB == NULL) {
+            printf("Erro: falha na alocacao de memoria.");
+            exit(1);
+        }
+
+        // Princípio de evitar excesso de tabulação.
+        if ((fEmpre = fopen("dados_emprestimo.dat", "wb")) == NULL) {
+            printf("Erro: falha na criacao do arquivo.");
+            exit(1);
+        }
+
+        fclose(fEmpre);
+        return DB;
+    }
+
+    fseek(fEmpre, 0, SEEK_END);
+    long tamanho = ftell(fEmpre);
+    if (tamanho == -1) {
+        printf("Erro: falha ao determinar tamanho do arquivo.");
+        exit(0);
+    }
+
+    *qntd = tamanho / sizeof(struct Emprestimo);
+    rewind(fEmpre);
+
+    *capacidade = (*qntd > MIN_CAPACITY) ? *qntd : MIN_CAPACITY;
+
+    DB = (struct Emprestimo*)malloc((*capacidade) * sizeof(struct Emprestimo));
+    if (DB == NULL) {
+        printf("Erro: falha na alocacao de memoria.");
+        exit(1);
+    }
+
+    if (*qntd > 0) {
+        fread(DB, sizeof(struct Emprestimo), *qntd, fEmpre);
+        printf("Dados carregados.\n");
+    }
+
+    fclose(fEmpre);
+    return DB;
+}
+void salvar_emprestimos(struct Emprestimo *DB, int qntd) {
+    FILE *fEmpre;
+
+    if ((fEmpre = fopen("dados_emprestimos.dat", "wb")) == NULL) {
+        printf("Erro: falha ao salvar emprestimos.");
+        exit(1);
+    }
+
+    if (qntd > 0) {
+        fwrite(DB, sizeof(struct Emprestimo), qntd, fEmpre);
+        printf("Emprestimos salvos com sucesso.\n");
+    }
+    fclose(fEmpre);
 }
