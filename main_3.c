@@ -79,6 +79,7 @@ int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprest
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
 void AUXILIAR_limparBuffer();
+void AUXILIAR_lerData(int d[]);
 
 // ==================== AUXILIARES ====================
 int AUXILIAR_contarString(char str[]) {
@@ -113,6 +114,32 @@ void AUXILIAR_lerStringRobusto(char *str) {
     
     // 1. Remove o '\n' (substituindo-o por '\0'). Se não houver um '\n' o strcspn substitui o '\0' por um '\0', logo, tudo certo.
     str[strcspn(str, "\n")] = '\0';
+}
+
+void AUXILIAR_lerData(int d[]) {
+    // Dia
+    printf("Insira a Data de Retirada (Emprestimo) de busca.\nDia: ");
+    scanf("%d", &d[0]);
+    while (d[0] < 1 || d[0] > 31) {
+        printf("\nData invalida. Digite novamente o dia: ");
+        scanf("%d", &d[0]);
+    }
+
+    // Mês
+    printf("Insira Mes: ");
+    scanf("%d", &d[1]);
+    while (d[1] < 1 || d[1] > 12) {
+        printf("\nData invalida. Digite novamente o mes: ");
+        scanf("%d", &d[1]);
+    }
+
+    // Ano
+    printf("Insira Ano: ");
+    scanf("%d", &d[2]);
+    while (d[2] < 0) {
+        printf("\nData invalida. Digite novamente: ");
+        scanf("%d", &d[2]);
+    }
 }
 
 // ==================== PROGRAMA PRINCIPAL ====================
@@ -1299,26 +1326,28 @@ int listar_especifico_emprestimo(struct Emprestimo *DB, int qntd) {
     }
 
     // ===== RETIRADA
-    printf("Insira a Data de Retirada (Emprestimo) de busca.\nDia: ");
-    scanf("%d", &data_retiradaBusca[0]);
-    while (data_retiradaBusca[0] < 1 || data_retiradaBusca[0] > 31) {
-        printf("\nData invalida. Digite novamente o dia: ");
-        scanf("%d", &data_retiradaBusca[0]);
-    }
-                
-    printf("Insira Mes: ");
-    scanf("%d", &data_retiradaBusca[1]);
-    while (data_retiradaBusca[1] < 1 || data_retiradaBusca[1] > 12) {
-        printf("\nData invalida. Digite novamente o mes: ");
-        scanf("%d",  &data_retiradaBusca[1]);
-    }
+    printf("Insira a Data de Retirada (Emprestimo) de busca.\n");
+    AUXILIAR_lerData(data_retiradaBusca);
 
-    printf("Insira Ano: ");
-    scanf("%d", &data_retiradaBusca[2]);
-    while (data_retiradaBusca[2] < 0) {
-        printf("\nData invalida. Digite novamente: ");
-        scanf("%d", &data_retiradaBusca[2]);
-    }
+    // scanf("%d", &data_retiradaBusca[0]);
+    // while (data_retiradaBusca[0] < 1 || data_retiradaBusca[0] > 31) {
+    //     printf("\nData invalida. Digite novamente o dia: ");
+    //     scanf("%d", &data_retiradaBusca[0]);
+    // }
+                
+    // printf("Insira Mes: ");
+    // scanf("%d", &data_retiradaBusca[1]);
+    // while (data_retiradaBusca[1] < 1 || data_retiradaBusca[1] > 12) {
+    //     printf("\nData invalida. Digite novamente o mes: ");
+    //     scanf("%d",  &data_retiradaBusca[1]);
+    // }
+
+    // printf("Insira Ano: ");
+    // scanf("%d", &data_retiradaBusca[2]);
+    // while (data_retiradaBusca[2] < 0) {
+    //     printf("\nData invalida. Digite novamente: ");
+    //     scanf("%d", &data_retiradaBusca[2]);
+    // }
 
     if ((i = buscar_index_emprestimo(cpfBusca, isbnBusca, data_retiradaBusca, DB, qntd)) == -1 ) {
         return i;
@@ -1342,6 +1371,39 @@ int listar_especifico_emprestimo(struct Emprestimo *DB, int qntd) {
     return 1;
 }
 int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, struct Livro DB_Livros, int *qntd, int *capacidade) {
+    char isbnBusca[MAX_ISBN]; char cpfBusca[MAX_CPF]; int data_retiradaBusca[3];
+    int i;
+
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    // ===== CPF
+    printf("Insira o CPF (Emprestimo) de busca: ");
+    fgets(cpfBusca, sizeof(cpfBusca), stdin);
+    AUXILIAR_lerStringRobusto(cpfBusca);
+
+    if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
+        return -1;
+    }
+
+    // Verificar se existe no DB_Usuarios (Precisar do tamanho maximo)
+
+    // ===== ISBN
+    printf("Insira o ISBN (Emprestimo) de busca: ");
+    fgets(isbnBusca, sizeof(isbnBusca), stdin);
+    AUXILIAR_lerStringRobusto(isbnBusca);
+
+    if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
+        return -1;
+    }
+
+    // Verificar se existe no DB_Livros (Precisar do tamanho maximo)
+
+    // ===== RETIRADA
+    printf("Insira a Data de Retirada (Emprestimo) de busca.\n");
+    AUXILIAR_lerData(data_retiradaBusca);
+    
     // Criar as chaves e verificar se existem em seus respectivos DBs.
     // Se a combinação das três for encontrada no DB Emprestimos, falha.
     // Por isso seria bom dividir o lista_especifico em duas funções...

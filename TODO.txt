@@ -10,3 +10,4 @@
     int qntd_elementos_l = 0, capacidade_total_l = 0;
 
 • Print tal para função. (Refatorar esse detalhe, se der tempo)
+• Aplicar o lerData no restante do codigo
