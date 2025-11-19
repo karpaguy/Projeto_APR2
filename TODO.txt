@@ -3,3 +3,10 @@
 • Return das funções para apresentar ao usuário (DONE)
 • Correção dos problemas de buffer (DONE)
 • Remover loops de "inserir id valido" (DONE)
+
+• Datas maior que atual
+• Dar um jeito com os...
+    int qntd_elementos_u = 0, capacidade_total_u = 0;
+    int qntd_elementos_l = 0, capacidade_total_l = 0;
+
+• Print tal para função. (Refatorar esse detalhe, se der tempo)
