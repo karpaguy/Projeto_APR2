@@ -20,3 +20,7 @@
     //     printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
     //     return -1;
     // }
+
+• OK após alteração info
+
+• tratamentos de datas de devolucao e etc
