@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include <time.h>
 
 #define MAX_CPF 12 // Ex.: 12345678900\0
 #define MAX_STRING 100
@@ -79,6 +80,7 @@ void salvar_emprestimos(struct Emprestimo *DB, int qntd);
 int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprestimo *DB, int qntd);
 
 void submenu_relatorios();
+int relatorio_dados_usuarios_xidade(struct Usuario *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
@@ -89,6 +91,7 @@ int AUXILIAR_lerCPF(char *cpfBusca);
 int AUXILIAR_lerISBN(char *isbnBusca);
 
 int AUXILIAR_compararDatasEmprestimo(int devolucao[], int retirada[]);
+void AUXILIAR_dataAtual(int arr[]);
 
 // ==================== AUXILIARES ====================
 int AUXILIAR_contarString(char str[]) {
@@ -186,10 +189,18 @@ int AUXILIAR_compararDatasEmprestimo(int devolucao[], int retirada[]) {
 
     return 1; // Igual ou maior → válido
 }
+void AUXILIAR_dataAtual(int arr[]) {
+    time_t agora = time(NULL);
+    struct tm *dt = localtime(&agora);
+
+    arr[0] = dt->tm_mday;
+    arr[1] = dt->tm_mon + 1;
+    arr[2] = dt->tm_year + 1900;
+}
 
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
-    printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 0.7\n");
+    printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 0.8\n");
     menu_principal();
 }
 
@@ -216,7 +227,7 @@ void menu_principal() {
                 submenu_emprestimos();
                 break;
             case 4:
-                // submenu_relatorios();
+                submenu_relatorios();
                 break;
         }
     } while (opt != 5);
@@ -1657,46 +1668,104 @@ int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprest
 // O exercico faz com que oprograma assuma ter N livros existentes, e não conta se um livro foi devolvido ou não para os emprestismos... Poderia ser uma biblioteca virtual?
 
 // ==================== SUBPROGRAMA RELATORIOS ====================
-// void submenu_relatorios() {
-//     int opt;
+void submenu_relatorios() {
+    int opt;
 
-//     struct Emprestimo *DB_Emprestimos = NULL;
-//     int qntd_elementos = 0, capacidade_total = 0;
-//     DB_Emprestimos = carregar_emprestimos(&qntd_elementos, &capacidade_total);
+    struct Emprestimo *DB_Emprestimos = NULL;
+    int qntd_elementos_e = 0, capacidade_total_e = 0;
+    DB_Emprestimos = carregar_emprestimos(&qntd_elementos_e, &capacidade_total_e);
 
-//     struct Usuario *DB_Usuarios = NULL;
-//     int qntd_elementos_u = 0, capacidade_total_u = 0;
-//     DB_Usuarios = carregar_usuarios(&qntd_elementos_u, &capacidade_total_u);
+    struct Usuario *DB_Usuarios = NULL;
+    int qntd_elementos_u = 0, capacidade_total_u = 0;
+    DB_Usuarios = carregar_usuarios(&qntd_elementos_u, &capacidade_total_u);
 
-//     struct Livro *DB_Livros = NULL;
-//     int qntd_elementos_l = 0, capacidade_total_l = 0;
-//     DB_Livros = carregar_livros(&qntd_elementos_l, &capacidade_total_l);
+    struct Livro *DB_Livros = NULL;
+    int qntd_elementos_l = 0, capacidade_total_l = 0;
+    DB_Livros = carregar_livros(&qntd_elementos_l, &capacidade_total_l);
 
-//     do {
-//         printf("#-------- MENU DE RELATORIOS. --------#\n");
-//         printf("1. RELATORIO: Todos os dados de todos os usuários com X de idade.\n");
-//         printf("2. RELATORIO: Todos os dados de todos os livros que tenham mais do que X autores.\n");
-//         printf("3. Inserir Emprestimo\n");
-//         // Mostrar o CPF da pessoa, o nome da pessoa, o ISBN do livro, o título do livro e
-//         // todos os demais atributos dos empréstimos que possuem data de devolução
-//         // entre as datas X e Y (inclusive), ambas fornecidas pelo usuário.
-//         printf("4. Alterar Emprestimo\n");
+    do {
+        printf("#-------- MENU DE RELATORIOS. --------#\n");
+        printf("1. RELATORIO: Todos os dados de todos os usuários com X de idade.\n");
+        printf("2. RELATORIO: Todos os dados de todos os livros que tenham mais do que X autores.\n");
+        printf("3. RELATORIO: WIP\n");
+        // Mostrar o CPF da pessoa, o nome da pessoa, o ISBN do livro, o título do livro e
+        // todos os demais atributos dos empréstimos que possuem data de devolução
+        // entre as datas X e Y (inclusive), ambas fornecidas pelo usuário.
+        printf("4. Sair\n");
 
-//         printf("Escolha sua opcao: ");
-//         scanf("%d", &opt);
-//         AUXILIAR_limparBuffer();
+        printf("Escolha sua opcao: ");
+        scanf("%d", &opt);
 
-//         switch(opt) {
-//             case 1:
-//                 relatorio_dados_usuarios_xidade();
-//             case 2:
+        switch(opt) {
+            case 1:
+                if (relatorio_dados_usuarios_xidade(DB_Usuarios, qntd_elementos_u)) {
+                    printf("Relatorio gerado com sucesso.\n");
+                } else {
+                    printf("Algo deu errado.\n");
+                }
+                break;
+            case 2:
+                break;
+        }
 
-//         }
+    } while (opt != 4);
 
-//     } while (opt != 4);
+    if(DB_Emprestimos != NULL) free(DB_Emprestimos);
+    if(DB_Usuarios != NULL) free(DB_Usuarios);
+    if(DB_Livros != NULL) free(DB_Livros);
+    printf("Retornando...\n\n");
+}
 
-//     if(DB_Emprestimos != NULL) free(DB_Emprestimos);
-//     if(DB_Usuarios != NULL) free(DB_Usuarios);
-//     if(DB_Livros != NULL) free(DB_Livros);
-//     printf("Retornando...\n\n");
-// }
+int relatorio_dados_usuarios_xidade(struct Usuario *DB, int qntd) {
+    int idadeBusca; int i; int dataAtual[3]; int FLAG_queryLocalized = 0;
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    // Condição necessária.
+    if (qntd == 0) {
+        printf("\n\033[32mAVISO:\033[0m Não há usuários cadastrados. Retornando...\n");
+        return 0;
+    }
+
+    printf("Digite a idade para filtrar: ");
+    scanf("%d", &idadeBusca);
+    FILE *relatorio = fopen("relatorio_dados_usuarios_xidade.txt", "w");
+    if (relatorio == NULL) {
+        return 0;
+    }
+
+    AUXILIAR_dataAtual(dataAtual);
+    for (i = 0; i < qntd; i++) {
+
+        int idade = dataAtual[2] - DB[i].data_nascimento[2];
+        // ainda não fez aniversário este ano
+        if (dataAtual[1] < DB[i].data_nascimento[1] || (dataAtual[1] == DB[i].data_nascimento[1] && dataAtual[0] < DB[i].data_nascimento[0])) idade--;
+        
+        if (idade >= idadeBusca) {
+            fprintf(relatorio, "Nome: %s\nCPF: %s\n Rua: %s\nNúmero da casa: %s\nCEP: %s\nTelefone 1: %s\nTelefone 2: %s\nEmail 1: %s\nEmail 2: %s\nProfissão: %s\nData de nascimento: %02d/%02d/%04d\nIdade: %d\n\n", 
+                DB[i].nome,
+                DB[i].CPF,
+                DB[i].nome_rua,
+                DB[i].numero_casa,
+                DB[i].CEP,
+                DB[i].numeros_telefone[0],
+                DB[i].numeros_telefone[1],
+                DB[i].contas_email[0],
+                DB[i].contas_email[1],
+                DB[i].profissao,
+                DB[i].data_nascimento[0],
+                DB[i].data_nascimento[1],
+                DB[i].data_nascimento[2],
+                idade
+            );
+
+            FLAG_queryLocalized = 1;
+        }
+    }
+
+    if (!FLAG_queryLocalized) {
+        fprintf(relatorio, "Nenhum servico encontrado neste periodo.\n");
+    }
+
+    fclose(relatorio);
+    return 1;
+}
