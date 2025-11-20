@@ -83,6 +83,9 @@ int AUXILIAR_confirmar();
 void AUXILIAR_limparBuffer();
 void AUXILIAR_lerData(int d[]);
 
+int AUXILIAR_lerCPF(char *cpfBusca);
+int AUXILIAR_lerISBN(char *isbnBusca);
+
 // ==================== AUXILIARES ====================
 int AUXILIAR_contarString(char str[]) {
     int i = 0;
@@ -91,7 +94,6 @@ int AUXILIAR_contarString(char str[]) {
     }
     return i;
 }
-
 int AUXILIAR_confirmar() {
     char str;
     printf("Tem certeza que deseja realizar esta operacao? (S/N)");
@@ -99,12 +101,10 @@ int AUXILIAR_confirmar() {
     if (str == 's' || str == 'S') return 1;
     return 0;
 }
-
 void AUXILIAR_limparBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
-
 void AUXILIAR_lerStringRobusto(char *str) {
     // ROBUSTEZ DE CHECAGEM! Checa se o \n foi lido. Se não foi (strchr retorna NULL).
     // Significa que a entrada excedeu o buffer e o \n ainda está no stdin.
@@ -118,6 +118,7 @@ void AUXILIAR_lerStringRobusto(char *str) {
     str[strcspn(str, "\n")] = '\0';
 }
 
+// Data a extrema utilização dessas leituras de "IDs", optei por modularizá-las.
 void AUXILIAR_lerData(int d[]) {
     // Dia
     printf("\nDia: ");
@@ -144,6 +145,36 @@ void AUXILIAR_lerData(int d[]) {
     }
 
     AUXILIAR_limparBuffer();
+}
+int AUXILIAR_lerCPF(char *cpfBusca) {    
+    fgets(cpfBusca, MAX_CPF, stdin);
+    AUXILIAR_lerStringRobusto(cpfBusca);
+
+    if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
+        return 0;
+    }
+
+    return 1;
+}
+int AUXILIAR_lerISBN(char *isbnBusca) {
+    fgets(isbnBusca, MAX_ISBN, stdin);
+    AUXILIAR_lerStringRobusto(isbnBusca);
+
+    if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
+        return 0;
+    }
+
+    return 1;
+
+    // fgets(isbnBusca, sizeof(isbnBusca), stdin);
+    // AUXILIAR_lerStringRobusto(isbnBusca);
+
+    // if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
+    //     printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
+    //     return -1;
+    // }
 }
 
 // ==================== PROGRAMA PRINCIPAL ====================
@@ -206,7 +237,7 @@ void submenu_usuarios() {
                 };
                 break;
             case 2:
-                if (listar_especifico_usuario(DB_Usuarios, qntd_elementos) == -1) {
+                if (listar_especifico_usuario(DB_Usuarios, qntd_elementos) == 0) {
                     printf("Nao foi possivel encontrar o usuario. Retornando...\n");
                 };
                 break;
@@ -328,16 +359,17 @@ int listar_especifico_usuario(struct Usuario *DB, int qntd) {
 
     AUXILIAR_limparBuffer(); // Limpeza inicial.
     printf("Insira o CPF de busca: ");
-    fgets(cpfBusca, sizeof(cpfBusca), stdin);
-    AUXILIAR_lerStringRobusto(cpfBusca);
+    if ( !(AUXILIAR_lerCPF(cpfBusca)) ) return 0;
+    // fgets(cpfBusca, sizeof(cpfBusca) , stdin);
+    // AUXILIAR_lerStringRobusto(cpfBusca);
 
-    if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
-        return -1;
-    }
+    // if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
+    //     printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
+    //     return -1;
+    // }
 
     if ((i = buscar_index_usuario(cpfBusca, DB, qntd)) == -1) {
-        return i;
+        return 0;
     }
 
     printf("Usuario encontrado.\n");
@@ -386,13 +418,7 @@ int inserir_usuario(struct Usuario **DB, int *qntd, int *capacidade) {
 
     // #================ CPF
     printf("NOVO - Insira o CPF: ");
-    fgets(novoU.CPF, sizeof(novoU.CPF), stdin);
-    AUXILIAR_lerStringRobusto(novoU.CPF);
-
-    if (AUXILIAR_contarString(novoU.CPF) != (MAX_CPF - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF. ");
-        return 0;
-    }
+    if ( !(AUXILIAR_lerCPF(novoU.CPF)) ) return 0;
 
     if (buscar_index_usuario(novoU.CPF, *DB, *qntd) != -1) {
         printf("\n\033[32mAVISO:\033[0m CPF digitado ja existe.\n");
@@ -526,13 +552,10 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
 
         switch (opt) {
             case 1: 
+            // Verificação com outra variável, para evitar sobrescrever e depois verificar que não pode.
                 printf("Novo CPF: "); 
-                fgets(tempCPF, sizeof(tempCPF), stdin);
-                AUXILIAR_lerStringRobusto(tempCPF);
-
-                if (AUXILIAR_contarString(tempCPF) != (MAX_CPF - 1)) {
-                    printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF. ");
-                } else {
+                if ( !(AUXILIAR_lerCPF(tempCPF)) ) return 0;
+                else {
                     if (buscar_index_usuario(tempCPF, DB, qntd) != -1) { 
                         printf("\n\033[32mAVISO:\033[0m CPF já existe."); 
                     } 
@@ -729,7 +752,7 @@ void submenu_livros() {
                 };
                 break;
             case 2:
-                if (listar_especifico_livro(DB_Livros, qntd_elementos) == -1) {
+                if (listar_especifico_livro(DB_Livros, qntd_elementos) == 0) {
                     printf("Nao foi possivel encontrar o livro. Retornando...\n");
                 };
                 break;
@@ -851,16 +874,17 @@ int listar_especifico_livro(struct Livro *DB, int qntd) {
 
     AUXILIAR_limparBuffer(); // Limpeza inicial.
     printf("Insira o ISBN de busca: ");
-    fgets(isbnBusca, sizeof(isbnBusca), stdin);
-    AUXILIAR_lerStringRobusto(isbnBusca);
+    if (!(AUXILIAR_lerISBN(isbnBusca))) return 0;
+    // fgets(isbnBusca, sizeof(isbnBusca), stdin);
+    // AUXILIAR_lerStringRobusto(isbnBusca);
 
-    if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
-        return -1;
-    }
+    // if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
+    //     printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
+    //     return -1;
+    // }
 
     if ((i = buscar_index_livro(isbnBusca, DB, qntd)) == -1) {
-        return i;
+        return 0;
     }
 
     printf("ISBN encontrado.\n");
@@ -1194,7 +1218,7 @@ void submenu_emprestimos() {
                 };
                 break;
             case 2:
-                if (listar_especifico_emprestimo(DB_Emprestimos, qntd_elementos) == -1) {
+                if (listar_especifico_emprestimo(DB_Emprestimos, qntd_elementos) == 0) {
                     printf("Nao foi possivel encontrar o emprestimo. Retornando...\n");
                 };
                 break;
@@ -1333,6 +1357,9 @@ int listar_especifico_emprestimo(struct Emprestimo *DB, int qntd) {
     printf("Insira a Data de Retirada (Emprestimo) de busca.\n");
     AUXILIAR_lerData(data_retiradaBusca);
 
+
+
+
     if ((i = buscar_index_emprestimo(cpfBusca, isbnBusca, data_retiradaBusca, DB, qntd)) == -1 ) {
         return i;
     }
@@ -1423,7 +1450,6 @@ int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, stru
 
     return 1;
 }
-
 int deletar_emprestimo(struct Emprestimo *DB, int *qntd) {
     char isbnBusca[MAX_ISBN]; char cpfBusca[MAX_CPF]; int data_retiradaBusca[3];
     int i;
