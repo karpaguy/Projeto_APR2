@@ -554,7 +554,7 @@ int alterar_usuario(struct Usuario *DB, int qntd) {
             case 1: 
             // Verificação com outra variável, para evitar sobrescrever e depois verificar que não pode.
                 printf("Novo CPF: "); 
-                if ( !(AUXILIAR_lerCPF(tempCPF)) ) return 0;
+                if ( !(AUXILIAR_lerCPF(tempCPF)) ) break;
                 else {
                     if (buscar_index_usuario(tempCPF, DB, qntd) != -1) { 
                         printf("\n\033[32mAVISO:\033[0m CPF já existe."); 
@@ -875,13 +875,6 @@ int listar_especifico_livro(struct Livro *DB, int qntd) {
     AUXILIAR_limparBuffer(); // Limpeza inicial.
     printf("Insira o ISBN de busca: ");
     if (!(AUXILIAR_lerISBN(isbnBusca))) return 0;
-    // fgets(isbnBusca, sizeof(isbnBusca), stdin);
-    // AUXILIAR_lerStringRobusto(isbnBusca);
-
-    // if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
-    //     printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
-    //     return -1;
-    // }
 
     if ((i = buscar_index_livro(isbnBusca, DB, qntd)) == -1) {
         return 0;
@@ -960,11 +953,8 @@ int alterar_livro(struct Livro *DB, int qntd) {
         switch (opt) {
             case 1: 
                 printf("Novo ISBN: "); 
-                fgets(tempISBN, sizeof(tempISBN), stdin);
-                AUXILIAR_lerStringRobusto(tempISBN);
-
-                if (AUXILIAR_contarString(tempISBN) != (MAX_ISBN - 1)) {
-                    printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN. ");
+                if (!(AUXILIAR_lerISBN(tempISBN))) {
+                    break;
                 } else {
                     if (buscar_index_livro(tempISBN, DB, qntd) != -1) { 
                         printf("\n\033[32mAVISO:\033[0m ISBN já existe."); 
@@ -1065,13 +1055,7 @@ int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
 
     // #================ ISBN
     printf("NOVO - Insira o ISBN: ");
-    fgets(novoL.ISBN, sizeof(novoL.ISBN), stdin);
-    AUXILIAR_lerStringRobusto(novoL.ISBN);
-
-    if (AUXILIAR_contarString(novoL.ISBN) != (MAX_ISBN - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN. ");
-        return 0;
-    }
+    if (!(AUXILIAR_lerISBN(novoL.ISBN))) return 0;
 
     if (buscar_index_livro(novoL.ISBN, *DB, *qntd) != -1) {
         printf("\n\033[32mAVISO:\033[0m ISBN digitado ja existe.\n");
@@ -1335,23 +1319,11 @@ int listar_especifico_emprestimo(struct Emprestimo *DB, int qntd) {
 
     // ===== CPF
     printf("Insira o CPF (Emprestimo) de busca: ");
-    fgets(cpfBusca, sizeof(cpfBusca), stdin);
-    AUXILIAR_lerStringRobusto(cpfBusca);
-
-    if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
-        return -1;
-    }
+    if ( !(AUXILIAR_lerCPF(cpfBusca)) ) return 0;
 
     // ===== ISBN
     printf("Insira o ISBN (Emprestimo) de busca: ");
-    fgets(isbnBusca, sizeof(isbnBusca), stdin);
-    AUXILIAR_lerStringRobusto(isbnBusca);
-
-    if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
-        return -1;
-    }
+    if ( !(AUXILIAR_lerISBN(isbnBusca)) ) return 0;
 
     // ===== RETIRADA
     printf("Insira a Data de Retirada (Emprestimo) de busca.\n");
@@ -1399,13 +1371,7 @@ int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, stru
 
     // ===== CPF
     printf("Insira o CPF: ");
-    fgets(novoE.CPF_Pessoa, sizeof(novoE.CPF_Pessoa), stdin);
-    AUXILIAR_lerStringRobusto(novoE.CPF_Pessoa);
-
-    if (AUXILIAR_contarString(novoE.CPF_Pessoa) != (MAX_CPF - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
-        return 0;
-    }
+    if ( !(AUXILIAR_lerCPF(novoE.CPF_Pessoa)) ) return 0;
     if (buscar_index_usuario(novoE.CPF_Pessoa, DB_Usuarios, qntd_u) == -1) {
         printf("\n\033[32mAVISO:\033[0m CPF não existe..\n");
         return 0;
@@ -1413,13 +1379,7 @@ int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, stru
 
     // ===== ISBN
     printf("Insira o ISBN: ");
-    fgets(novoE.ISBN_Livro, sizeof(novoE.ISBN_Livro), stdin);
-    AUXILIAR_lerStringRobusto(novoE.ISBN_Livro);
-
-    if (AUXILIAR_contarString(novoE.ISBN_Livro) != (MAX_ISBN - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
-        return 0;
-    }
+    if ( !(AUXILIAR_lerISBN(novoE.ISBN_Livro)) ) return 0;
     if (buscar_index_livro(novoE.ISBN_Livro, DB_Livros, qntd_l) == -1) {
         printf("\n\033[32mAVISO:\033[0m ISBN não existe..\n");
         return 0;
@@ -1458,23 +1418,12 @@ int deletar_emprestimo(struct Emprestimo *DB, int *qntd) {
 
     // ===== CPF
     printf("Insira o CPF (Emprestimo) de busca: ");
-    fgets(cpfBusca, sizeof(cpfBusca), stdin);
-    AUXILIAR_lerStringRobusto(cpfBusca);
+    if ( !(AUXILIAR_lerCPF(cpfBusca)) ) return 0;
 
-    if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
-        return 0;
-    }
 
     // ===== ISBN
     printf("Insira o ISBN (Emprestimo) de busca: ");
-    fgets(isbnBusca, sizeof(isbnBusca), stdin);
-    AUXILIAR_lerStringRobusto(isbnBusca);
-
-    if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
-        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
-        return 0;
-    }
+    if ( !(AUXILIAR_lerISBN(isbnBusca)) ) return 0;
 
     // ===== RETIRADA
     printf("Insira a Data de Retirada (Emprestimo) de busca.\n");
