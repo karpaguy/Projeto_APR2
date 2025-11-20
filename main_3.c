@@ -72,7 +72,9 @@ void submenu_emprestimos();
 struct Emprestimo *carregar_emprestimos(int *qntd, int *capacidade);
 int listar_todos_emprestimos(struct Emprestimo *DB, int qntd);
 int listar_especifico_emprestimo(struct Emprestimo *DB, int qntd);
-int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, struct Livro DB_Livros, int *qntd, int *capacidade);
+int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, struct Livro *DB_Livros, int *qntd, int *capacidade, int qntd_u, int qntd_l);
+
+int deletar_emprestimo(struct Emprestimo *DB, int *qntd);
 void salvar_emprestimos(struct Emprestimo *DB, int qntd);
 int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprestimo *DB, int qntd);
 
@@ -118,7 +120,7 @@ void AUXILIAR_lerStringRobusto(char *str) {
 
 void AUXILIAR_lerData(int d[]) {
     // Dia
-    printf("Insira a Data de Retirada (Emprestimo) de busca.\nDia: ");
+    printf("\nDia: ");
     scanf("%d", &d[0]);
     while (d[0] < 1 || d[0] > 31) {
         printf("\nData invalida. Digite novamente o dia: ");
@@ -140,6 +142,8 @@ void AUXILIAR_lerData(int d[]) {
         printf("\nData invalida. Digite novamente: ");
         scanf("%d", &d[2]);
     }
+
+    AUXILIAR_limparBuffer();
 }
 
 // ==================== PROGRAMA PRINCIPAL ====================
@@ -1196,11 +1200,11 @@ void submenu_emprestimos() {
                 break;
 
             case 3:
-                // if (inserir_emprestimo(&DB_Emprestimos, DB_Usuarios, DB_Livros, &qntd_elementos, &capacidade_total)) {
-                //     printf("Emprestimo inserido com sucesso. Retornando...\n");
-                // } else {
-                //     printf("Erro ao inserir emprestimo. Retornando...\n");
-                // }
+                if (inserir_emprestimo(&DB_Emprestimos, DB_Usuarios, DB_Livros, &qntd_elementos, &capacidade_total, qntd_elementos_u, qntd_elementos_l)) {
+                    printf("Emprestimo inserido com sucesso. Retornando...\n");
+                } else {
+                    printf("Erro ao inserir emprestimo. Retornando...\n");
+                }
                 break;
             case 4:
                 // if (alterar_livro(DB_Livros, qntd_elementos)) {
@@ -1210,11 +1214,11 @@ void submenu_emprestimos() {
                 // };
                 break;
             case 5:
-                // if (deletar_livro(DB_Livros, &qntd_elementos)) {
-                //     printf("Livro deletado com sucesso. Retornando...\n");
-                // } else {
-                //     printf("Livro nao pode ser deletado. Retornando...\n");
-                // };
+                if (deletar_emprestimo(DB_Emprestimos, &qntd_elementos)) {
+                    printf("Emprestimo deletado com sucesso. Retornando...\n");
+                } else {
+                    printf("Emprestimo nao pode ser deletado. Retornando...\n");
+                };
                 break;
         }
     } while (opt != 6);
@@ -1329,26 +1333,6 @@ int listar_especifico_emprestimo(struct Emprestimo *DB, int qntd) {
     printf("Insira a Data de Retirada (Emprestimo) de busca.\n");
     AUXILIAR_lerData(data_retiradaBusca);
 
-    // scanf("%d", &data_retiradaBusca[0]);
-    // while (data_retiradaBusca[0] < 1 || data_retiradaBusca[0] > 31) {
-    //     printf("\nData invalida. Digite novamente o dia: ");
-    //     scanf("%d", &data_retiradaBusca[0]);
-    // }
-                
-    // printf("Insira Mes: ");
-    // scanf("%d", &data_retiradaBusca[1]);
-    // while (data_retiradaBusca[1] < 1 || data_retiradaBusca[1] > 12) {
-    //     printf("\nData invalida. Digite novamente o mes: ");
-    //     scanf("%d",  &data_retiradaBusca[1]);
-    // }
-
-    // printf("Insira Ano: ");
-    // scanf("%d", &data_retiradaBusca[2]);
-    // while (data_retiradaBusca[2] < 0) {
-    //     printf("\nData invalida. Digite novamente: ");
-    //     scanf("%d", &data_retiradaBusca[2]);
-    // }
-
     if ((i = buscar_index_emprestimo(cpfBusca, isbnBusca, data_retiradaBusca, DB, qntd)) == -1 ) {
         return i;
     }
@@ -1368,9 +1352,79 @@ int listar_especifico_emprestimo(struct Emprestimo *DB, int qntd) {
         DB[i].multa_diaria
     );
 
+    return i;
+}
+int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, struct Livro *DB_Livros, int *qntd, int *capacidade, int qntd_u, int qntd_l) {
+    if ((*qntd) == (*capacidade)) {
+        (*capacidade)++;
+        
+        // Fazendo com um tempDB para não dar realloc direto no DB, caso aconteça NULL, vazamos a memória inteira.
+        struct Emprestimo *tempDB = realloc(*DB, (*capacidade) * sizeof(struct Emprestimo));
+        if (tempDB == NULL) {
+            return 0;
+        }
+        
+        *DB = tempDB;
+    }
+
+    struct Emprestimo novoE;
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    // ===== CPF
+    printf("Insira o CPF: ");
+    fgets(novoE.CPF_Pessoa, sizeof(novoE.CPF_Pessoa), stdin);
+    AUXILIAR_lerStringRobusto(novoE.CPF_Pessoa);
+
+    if (AUXILIAR_contarString(novoE.CPF_Pessoa) != (MAX_CPF - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
+        return 0;
+    }
+    if (buscar_index_usuario(novoE.CPF_Pessoa, DB_Usuarios, qntd_u) == -1) {
+        printf("\n\033[32mAVISO:\033[0m CPF não existe..\n");
+        return 0;
+    }
+
+    // ===== ISBN
+    printf("Insira o ISBN: ");
+    fgets(novoE.ISBN_Livro, sizeof(novoE.ISBN_Livro), stdin);
+    AUXILIAR_lerStringRobusto(novoE.ISBN_Livro);
+
+    if (AUXILIAR_contarString(novoE.ISBN_Livro) != (MAX_ISBN - 1)) {
+        printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
+        return 0;
+    }
+    if (buscar_index_livro(novoE.ISBN_Livro, DB_Livros, qntd_l) == -1) {
+        printf("\n\033[32mAVISO:\033[0m ISBN não existe..\n");
+        return 0;
+    }
+
+    // ===== RETIRADA
+    printf("NOVO - Insira a Data de Retirada.\n");
+    AUXILIAR_lerData(novoE.data_retirada);
+    
+    // Se todos passaram pela verificação se existência em outros DB (CPF e LIVROS), seguir verificar se já não está no DB.
+
+    if (buscar_index_emprestimo(novoE.CPF_Pessoa, novoE.ISBN_Livro, novoE.data_retirada, *DB, *qntd) != -1) {
+        printf("\n\033[32mAVISO:\033[0m Cadastro de emprestimo ja existe.\n");
+        return 0;
+    }
+
+    // Passado tudo isso, finalmente...
+    // #================ DATA DEVOLUÇÃO
+    printf("\nNOVO - Insira a Data para Devolução: ");
+    AUXILIAR_lerData(novoE.data_devolucao);
+
+    // #================ MULTA DIARIA
+    printf("\nNOVO - Insira valor da Multa Diaria: ");
+    scanf("%d", &novoE.multa_diaria);
+
+    (*DB)[*qntd] = novoE;
+    (*qntd)++;
+
     return 1;
 }
-int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, struct Livro DB_Livros, int *qntd, int *capacidade) {
+
+int deletar_emprestimo(struct Emprestimo *DB, int *qntd) {
     char isbnBusca[MAX_ISBN]; char cpfBusca[MAX_CPF]; int data_retiradaBusca[3];
     int i;
 
@@ -1383,10 +1437,8 @@ int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, stru
 
     if (AUXILIAR_contarString(cpfBusca) != (MAX_CPF - 1)) {
         printf("\n\033[32mAVISO:\033[0m Formatacao invalida de CPF.\n");
-        return -1;
+        return 0;
     }
-
-    // Verificar se existe no DB_Usuarios (Precisar do tamanho maximo)
 
     // ===== ISBN
     printf("Insira o ISBN (Emprestimo) de busca: ");
@@ -1395,21 +1447,38 @@ int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, stru
 
     if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
         printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
-        return -1;
+        return 0;
     }
-
-    // Verificar se existe no DB_Livros (Precisar do tamanho maximo)
 
     // ===== RETIRADA
     printf("Insira a Data de Retirada (Emprestimo) de busca.\n");
     AUXILIAR_lerData(data_retiradaBusca);
-    
-    // Criar as chaves e verificar se existem em seus respectivos DBs.
-    // Se a combinação das três for encontrada no DB Emprestimos, falha.
-    // Por isso seria bom dividir o lista_especifico em duas funções...
+
+    if ((i = buscar_index_emprestimo(cpfBusca, isbnBusca, data_retiradaBusca, DB, *qntd)) == -1 ) {
+        return 0;
+    }
+
+    i = listar_especifico_emprestimo(DB, *qntd); // Editar, ver TODO.
+    if (i == -1) {
+        return 0;
+    }
+
+    printf("Emprestimo a ser excluido...\nCPF: %s - ISBN: %s\n - Data de Retirada: %d/%d/%d", DB[i].CPF_Pessoa, DB[i].ISBN_Livro, DB[i].data_retirada[0], DB[i].data_retirada[1], DB[i].data_retirada[2]);
+    if (AUXILIAR_confirmar()) {
+        if (*qntd == 0) {
+            (*qntd)--;
+            // O emprestimo que fica não será lido e será sobrescrito numa próxima iteração se inserir.
+        } else {
+            for (i; i < *qntd -1; i++) {
+                DB[i] = DB[i+1];
+            }
+
+            (*qntd)--;
+        }
+        return 1;
+    }
+    return 0;
 }
-
-
 void salvar_emprestimos(struct Emprestimo *DB, int qntd) {
     FILE *fEmpre;
 

@@ -11,3 +11,4 @@
 
 • Print tal para função. (Refatorar esse detalhe, se der tempo)
 • Aplicar o lerData no restante do codigo
+• i = listar_especifico_emprestimo(DB, *qntd), converte essa bagaça numa função logo e pronto.
