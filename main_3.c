@@ -81,6 +81,7 @@ int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprest
 
 void submenu_relatorios();
 int relatorio_dados_usuarios_xidade(struct Usuario *DB, int qntd);
+int relatorio_dados_livros_xautores(struct Livro *DB, int qntd);
 
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
@@ -200,7 +201,7 @@ void AUXILIAR_dataAtual(int arr[]) {
 
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
-    printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 0.8\n");
+    printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 0.9\n");
     menu_principal();
 }
 
@@ -1102,7 +1103,7 @@ int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
     AUXILIAR_limparBuffer();
 
     if (qtnd_autores < 1 || qtnd_autores > MAX_AUTORES) {
-        printf("\n\033[32mAVISO:\033[0m Quantidade inválida.\n");
+        printf("\n\033[32mAVISO:\033[0m Quantidade invalida.\n");
         return 0;
     }
 
@@ -1119,7 +1120,7 @@ int inserir_livro(struct Livro **DB, int *qntd, int *capacidade) {
     }
 
     // #================ PAGINAS
-    printf("\nNOVO - Insira o Total de Páginas: ");
+    printf("\nNOVO - Insira o Total de Paginas: ");
     scanf("%d", &novoL.numero_paginas);
 
     (*DB)[*qntd] = novoL;
@@ -1685,7 +1686,7 @@ void submenu_relatorios() {
 
     do {
         printf("#-------- MENU DE RELATORIOS. --------#\n");
-        printf("1. RELATORIO: Todos os dados de todos os usuários com X de idade.\n");
+        printf("1. RELATORIO: Todos os dados de todos os usuarios com X de idade.\n");
         printf("2. RELATORIO: Todos os dados de todos os livros que tenham mais do que X autores.\n");
         printf("3. RELATORIO: WIP\n");
         // Mostrar o CPF da pessoa, o nome da pessoa, o ISBN do livro, o título do livro e
@@ -1705,6 +1706,13 @@ void submenu_relatorios() {
                 }
                 break;
             case 2:
+                if (relatorio_dados_livros_xautores(DB_Livros, qntd_elementos_l)) {
+                    printf("Relatorio gerado com sucesso.\n");
+                } else {
+                    printf("Algo deu errado.\n");
+                }
+                break;
+            case 3:
                 break;
         }
 
@@ -1763,9 +1771,60 @@ int relatorio_dados_usuarios_xidade(struct Usuario *DB, int qntd) {
     }
 
     if (!FLAG_queryLocalized) {
-        fprintf(relatorio, "Nenhum servico encontrado neste periodo.\n");
+        fprintf(relatorio, "Nenhum usuario encontrado com este filtro.\n");
     }
 
+    fclose(relatorio);
+    return 1;
+}
+int relatorio_dados_livros_xautores(struct Livro *DB, int qntd) {
+    int quantidadeBusca; int i; int a; int FLAG_queryLocalized = 0;
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    // Condição necessária.
+    if (qntd == 0) {
+        printf("\n\033[32mAVISO:\033[0m Não há livros cadastrados. Retornando...\n");
+        return 0;
+    }
+
+    printf("Digite a quantidade de autores para filtrar: ");
+    scanf("%d", &quantidadeBusca);
+    if (quantidadeBusca < 1 || quantidadeBusca > 10) {
+        printf("\n\033[32mAVISO:\033[0m Quantidade invalida de autores. Retornando...\n");
+        return 0;
+    }
+
+    FILE *relatorio = fopen("relatorio_dados_livros_xautores.txt", "w");
+    if (relatorio == NULL) {
+        return 0;
+    }
+
+    for (i = 0; i < qntd; i++) {
+        a = 0;
+        while (a < MAX_AUTORES && DB[i].autores[a][0] != '\0') a++;
+
+        if (a > quantidadeBusca) {
+            fprintf(relatorio,"Título: %s\nISBN: %s\nGênero: %s\nNúmero de páginas: %d\n",
+                DB[i].titulo,
+                DB[i].ISBN,
+                DB[i].genero,
+                DB[i].numero_paginas
+            );
+
+            // Listar autores
+            fprintf(relatorio, "Autores:\n");
+            for (a = 0; a < MAX_AUTORES && DB[i].autores[a][0] != '\0'; a++) {
+                fprintf(relatorio, "  %d. %s\n", a + 1, DB[i].autores[a]);
+            }
+            fprintf(relatorio, "\n");  // Linha em branco depois do registro
+
+            FLAG_queryLocalized = 1;
+        } 
+    }
+
+    if (!FLAG_queryLocalized) {
+        fprintf(relatorio, "Nenhum livro encontrado com este filtro.\n");
+    }
     fclose(relatorio);
     return 1;
 }
