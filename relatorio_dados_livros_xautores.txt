@@ -1,18 +1,26 @@
-Título: Livro Para Filtro
-ISBN: 9788595084542
-Gênero: Fantasia
-Número de páginas: 140
+Título: O Engenheiro do Vazio
+ISBN: 9786598723019
+Gênero: Ficcao Cientifica
+Número de páginas: 288
 Autores:
-  1. L1
-  2. L2
-  3. L3
+  1. Ricardo Valdes
+  2. Neto Filho
 
-Título: Mais uma Livrada
-ISBN: 9788595084642
-Gênero: Poema
-Número de páginas: 450
+Título: Fragmentos de um Sol Partido
+ISBN: 9781593278945
+Gênero: Romance
+Número de páginas: 785
 Autores:
-  1. P1
-  2. P2
-  3. P3
+  1. Danae Kohler
+  2. Helena Marcondes
+  3. Marcos H. Ortega
+
+Título: A Maquina que Sonhava com Flores
+ISBN: 9788590467237
+Gênero: Romance
+Número de páginas: 980
+Autores:
+  1. Elisa Antunes
+  2. Danae Kohler
+  3. Helena Marcondes
 

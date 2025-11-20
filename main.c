@@ -82,6 +82,7 @@ int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprest
 void submenu_relatorios();
 int relatorio_dados_usuarios_xidade(struct Usuario *DB, int qntd);
 int relatorio_dados_livros_xautores(struct Livro *DB, int qntd);
+int relatorio_dados_emprestimos_pdevolucao(struct Usuario *DB_Usuarios, struct Livro *DB_Livros, struct Emprestimo *DB_Emprestimos, int qntd_u, int qntd_l, int qntd_e);
 
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
@@ -131,6 +132,7 @@ void AUXILIAR_lerData(int d[]) {
     // Dia
     printf("Dia: ");
     scanf("%d", &d[0]);
+    AUXILIAR_limparBuffer();
     while (d[0] < 1 || d[0] > 31) {
         printf("\nData invalida. Digite novamente o dia: ");
         scanf("%d", &d[0]);
@@ -139,6 +141,7 @@ void AUXILIAR_lerData(int d[]) {
     // Mês
     printf("Insira Mes: ");
     scanf("%d", &d[1]);
+    AUXILIAR_limparBuffer();
     while (d[1] < 1 || d[1] > 12) {
         printf("\nData invalida. Digite novamente o mes: ");
         scanf("%d", &d[1]);
@@ -147,12 +150,11 @@ void AUXILIAR_lerData(int d[]) {
     // Ano
     printf("Insira Ano: ");
     scanf("%d", &d[2]);
+    AUXILIAR_limparBuffer();
     while (d[2] < 0) {
         printf("\nData invalida. Digite novamente: ");
         scanf("%d", &d[2]);
     }
-
-    AUXILIAR_limparBuffer();
 }
 int AUXILIAR_lerCPF(char *cpfBusca) {    
     fgets(cpfBusca, MAX_CPF, stdin);
@@ -176,17 +178,17 @@ int AUXILIAR_lerISBN(char *isbnBusca) {
 
     return 1;
 }
-int AUXILIAR_compararDatasEmprestimo(int devolucao[], int retirada[]) {
+int AUXILIAR_compararDatas(int dFinal[], int dInicial[]) {
     // Ano (Ano pode ser maior, então já retorna, mas se for igual segue. Essa é a lógica dos demais)
-    if (devolucao[2] < retirada[2]) return 0;
-    if (devolucao[2] > retirada[2]) return 1;
+    if (dFinal[2] < dInicial[2]) return 0;
+    if (dFinal[2] > dInicial[2]) return 1;
 
     // Mes ( anos iguais )
-    if (devolucao[1] < retirada[1]) return 0;
-    if (devolucao[1] > retirada[1]) return 1;
+    if (dFinal[1] < dInicial[1]) return 0;
+    if (dFinal[1] > dInicial[1]) return 1;
 
     // Dia ( anos e meses iguais )
-    if (devolucao[0] < retirada[0]) return 0;
+    if (dFinal[0] < dInicial[0]) return 0;
 
     return 1; // Igual ou maior → válido
 }
@@ -201,7 +203,7 @@ void AUXILIAR_dataAtual(int arr[]) {
 
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
-    printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 0.9\n");
+    printf("★-------- SISTEMA DE BIBLIOTECA. --------★\nJuntos por um mundo mais literario.\nversao 1.0\n");
     menu_principal();
 }
 
@@ -209,6 +211,7 @@ void menu_principal() {
     int opt;
 
     do {
+        printf("#-------- MENU PRINCIPAL. --------#\n");
         printf("1. Submenu de Usuarios\n");
         printf("2. Submenu de Livros\n");
         printf("3. Submenu de Emprestimos\n");
@@ -258,7 +261,7 @@ void submenu_usuarios() {
         switch(opt) {
             case 1 :
                 if (listar_todos_usuarios(DB_Usuarios, qntd_elementos) == 0) {
-                    printf("Nenhum usuário cadastrado. Retornando...\n");
+                    printf("Nenhum usuario cadastrado. Retornando...\n");
                 };
                 break;
             case 2:
@@ -1424,7 +1427,7 @@ int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, stru
     printf("\nNOVO - Insira a Data para Devolucao.\n");
     AUXILIAR_lerData(novoE.data_devolucao);
 
-    if (AUXILIAR_compararDatasEmprestimo(novoE.data_devolucao, novoE.data_retirada) == 0) {
+    if (AUXILIAR_compararDatas(novoE.data_devolucao, novoE.data_retirada) == 0) {
         printf("\n\033[32mAVISO:\033[0m Data de devolucao nao pode ser antes da retirada.\n");
         return 0;
     }
@@ -1528,7 +1531,7 @@ int alterar_emprestimo(struct Emprestimo *DB, struct Usuario *DB_Usuarios, struc
                 printf("Nova data de emprestimo do livro: ");
                 AUXILIAR_lerData(tempData);
 
-                if (AUXILIAR_compararDatasEmprestimo(temp.data_devolucao, tempData) == 0) {
+                if (AUXILIAR_compararDatas(temp.data_devolucao, tempData) == 0) {
                     printf("\n\033[32mAVISO:\033[0m Data de devolucao nao pode ser antes da retirada.\n");
                 } else{
                     if (buscar_index_emprestimo(temp.CPF_Pessoa, temp.ISBN_Livro, tempData, DB, qntd) != -1) {
@@ -1549,7 +1552,7 @@ int alterar_emprestimo(struct Emprestimo *DB, struct Usuario *DB_Usuarios, struc
                 printf("Nova data de devolucao do livro: ");
                 AUXILIAR_lerData(tempData);
 
-                if (AUXILIAR_compararDatasEmprestimo(tempData, temp.data_retirada) == 0) {
+                if (AUXILIAR_compararDatas(tempData, temp.data_retirada) == 0) {
                     printf("\n\033[32mAVISO:\033[0m Data de devolucao nao pode ser antes da retirada.\n");
                 } else{
                     for (j = 0; j < 3; j++) 
@@ -1688,10 +1691,7 @@ void submenu_relatorios() {
         printf("#-------- MENU DE RELATORIOS. --------#\n");
         printf("1. RELATORIO: Todos os dados de todos os usuarios com X de idade.\n");
         printf("2. RELATORIO: Todos os dados de todos os livros que tenham mais do que X autores.\n");
-        printf("3. RELATORIO: WIP\n");
-        // Mostrar o CPF da pessoa, o nome da pessoa, o ISBN do livro, o título do livro e
-        // todos os demais atributos dos empréstimos que possuem data de devolução
-        // entre as datas X e Y (inclusive), ambas fornecidas pelo usuário.
+        printf("3. RELATORIO: Todos os dados dos emprestimos com data de devolucao entre X e Y (inclusive).\n");
         printf("4. Sair\n");
 
         printf("Escolha sua opcao: ");
@@ -1713,6 +1713,11 @@ void submenu_relatorios() {
                 }
                 break;
             case 3:
+                if (relatorio_dados_emprestimos_pdevolucao(DB_Usuarios, DB_Livros, DB_Emprestimos, qntd_elementos_u, qntd_elementos_l, qntd_elementos_e)) {
+                    printf("Relatorio gerado com sucesso.\n");
+                } else {
+                    printf("Algo deu errado.\n");
+                }
                 break;
         }
 
@@ -1789,7 +1794,7 @@ int relatorio_dados_livros_xautores(struct Livro *DB, int qntd) {
 
     printf("Digite a quantidade de autores para filtrar: ");
     scanf("%d", &quantidadeBusca);
-    if (quantidadeBusca < 1 || quantidadeBusca > 10) {
+    if (quantidadeBusca < 0 || quantidadeBusca > 10) {
         printf("\n\033[32mAVISO:\033[0m Quantidade invalida de autores. Retornando...\n");
         return 0;
     }
@@ -1824,6 +1829,73 @@ int relatorio_dados_livros_xautores(struct Livro *DB, int qntd) {
 
     if (!FLAG_queryLocalized) {
         fprintf(relatorio, "Nenhum livro encontrado com este filtro.\n");
+    }
+    fclose(relatorio);
+    return 1;
+}
+int relatorio_dados_emprestimos_pdevolucao(struct Usuario *DB_Usuarios, struct Livro *DB_Livros, struct Emprestimo *DB_Emprestimos, int qntd_u, int qntd_l, int qntd_e) {
+    int dataInicial[3]; int dataFinal[3]; int FLAG_queryLocalized = 0;
+    int i; int j;
+    AUXILIAR_limparBuffer(); // Limpeza inicial.
+
+    // Condições necessárias.
+    if (qntd_u == 0) {
+        printf("\n\033[32mAVISO:\033[0m Não há usuarios cadastrados. Retornando...\n");
+        return 0;
+    }
+    if (qntd_l == 0) {
+        printf("\n\033[32mAVISO:\033[0m Não há livros cadastrados. Retornando...\n");
+        return 0;
+    }
+    if (qntd_e == 0) {
+        printf("\n\033[32mAVISO:\033[0m Não há emprestimos cadastrados. Retornando...\n");
+        return 0;
+    }
+
+    printf("Insira a DATA INICIAL de busca.\n");
+    AUXILIAR_lerData(dataInicial);
+
+    printf("Insira a DATA FINAL de busca.\n");
+    AUXILIAR_lerData(dataFinal);
+
+    if (AUXILIAR_compararDatas(dataFinal, dataInicial) == 0) {
+        printf("\n\033[32mAVISO:\033[0m Data de busca final nao pode ser antes da data de busca inicial.\n");
+        return 0;
+    }
+
+    FILE *relatorio = fopen("relatorio_dados_emprestimos_pdevolucao.txt", "w");
+    if (relatorio == NULL) {
+        return 0;
+    }
+
+    for (i = 0; i < qntd_e; i ++) {
+        // Comparação para verificar se enquadra dentro dos parâmetros estabelecidos de período. Inicio > Devolução < Final 
+        if (AUXILIAR_compararDatas(DB_Emprestimos[i].data_devolucao, dataInicial) && AUXILIAR_compararDatas(dataFinal, DB_Emprestimos[i].data_devolucao)) {
+            fprintf(relatorio,"CPF: %s\n", DB_Emprestimos[i].CPF_Pessoa);
+            j = buscar_index_usuario(DB_Emprestimos[i].CPF_Pessoa, DB_Usuarios, qntd_u);
+            fprintf(relatorio,"Nome: %s\n", DB_Usuarios[j].nome);
+
+            fprintf(relatorio,"ISBN: %s\n", DB_Emprestimos[i].ISBN_Livro);
+            j = buscar_index_livro(DB_Emprestimos[i].ISBN_Livro, DB_Livros, qntd_l);
+            fprintf(relatorio,"Título: %s\n", DB_Livros[j].titulo);
+
+            fprintf(relatorio,"Data Retirada: %d/%d/%d\nData Devolução: %d/%d/%d\nMulta Diária: %.2f", 
+                DB_Emprestimos[i].data_retirada[0],
+                DB_Emprestimos[i].data_retirada[1],
+                DB_Emprestimos[i].data_retirada[2],
+                DB_Emprestimos[i].data_devolucao[0],
+                DB_Emprestimos[i].data_devolucao[1],
+                DB_Emprestimos[i].data_devolucao[2],
+                DB_Emprestimos[i].multa_diaria
+            );
+            fprintf(relatorio, "\n\n");  // Linha em branco depois do registro
+
+            FLAG_queryLocalized = 1;
+        }
+    }
+
+    if (!FLAG_queryLocalized) {
+        fprintf(relatorio, "Nenhuma informação encontrada com este filtro.\n");
     }
     fclose(relatorio);
     return 1;

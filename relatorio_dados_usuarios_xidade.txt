@@ -1,39 +1,52 @@
-Nome: Pedro P
-CPF: 47624460842
- Rua: Rua C
-Número da casa: 1299
-CEP: 13562460
-Telefone 1: 15994317717
+Nome: Junior
+CPF: 47620080010
+ Rua: Rua Bonita
+Número da casa: 1200
+CEP: 13500400
+Telefone 1: 16994007777
 Telefone 2: 
-Email 1: p@gmail.com
-Email 2: s@gmail.com
-Profissão: Professor
-Data de nascimento: 10/05/1993
-Idade: 32
-
-Nome: Paulino da Silva
-CPF: 47624460895
- Rua: Rua L
-Número da casa: 145
-CEP: 13562460
-Telefone 1: 16994317717
-Telefone 2: 
-Email 1: d@gmail.com
+Email 1: junior@gmail.com
 Email 2: 
-Profissão: Trabalho
-Data de nascimento: 28/11/2000
-Idade: 24
+Profissão: Professor
+Data de nascimento: 20/11/2000
+Idade: 25
 
-Nome: Lily da Silva
-CPF: 57824460878
- Rua: Rua L
-Número da casa: 146
-CEP: 13562460
-Telefone 1: 16994317789
+Nome: Lisa da Silva Silveira
+CPF: 47620080030
+ Rua: Rua Albuquerque Rosa
+Número da casa: 14
+CEP: 13900123
+Telefone 1: 16994310000
 Telefone 2: 
-Email 1: l@gmail.com
-Email 2: s@outlook.com
-Profissão: Professora
-Data de nascimento: 28/11/2000
-Idade: 24
+Email 1: lisa@gmail.com
+Email 2: familiaeducacao@educacao.com
+Profissão: Diretora de Escola
+Data de nascimento: 16/07/1985
+Idade: 40
+
+Nome: Fulano
+CPF: 47620080040
+ Rua: Rua Ciclana
+Número da casa: 1400
+CEP: 13562490
+Telefone 1: 16994443331
+Telefone 2: 
+Email 1: fulano@gmail.com
+Email 2: felino@gmail.com
+Profissão: Pedreiro
+Data de nascimento: 10/03/1999
+Idade: 26
+
+Nome: Roberto Dourado
+CPF: 47620080050
+ Rua: Casa Blanca
+Número da casa: 1200
+CEP: 14500200
+Telefone 1: 16991118888
+Telefone 2: 19995219999
+Email 1: robertinho@outlook.com
+Email 2: robertosp4m@gmail.com
+Profissão: Advogado
+Data de nascimento: 20/11/1995
+Idade: 30
 

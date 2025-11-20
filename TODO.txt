@@ -1,26 +1,6 @@
-• Formatar CPF
 • Verificações de Inserir (DONE)
 • Return das funções para apresentar ao usuário (DONE)
 • Correção dos problemas de buffer (DONE)
 • Remover loops de "inserir id valido" (DONE)
-
-• Datas maior que atual
-• Dar um jeito com os...
-    int qntd_elementos_u = 0, capacidade_total_u = 0;
-    int qntd_elementos_l = 0, capacidade_total_l = 0;
-
-• Print tal para função. (Refatorar esse detalhe, se der tempo)
-• Aplicar o lerData no restante do codigo
-• i = listar_especifico_emprestimo(DB, *qntd), converte essa bagaça numa função logo e pronto.
-
-    // fgets(isbnBusca, sizeof(isbnBusca), stdin);
-    // AUXILIAR_lerStringRobusto(isbnBusca);
-
-    // if (AUXILIAR_contarString(isbnBusca) != (MAX_ISBN - 1)) {
-    //     printf("\n\033[32mAVISO:\033[0m Formatacao invalida de ISBN.\n ");
-    //     return -1;
-    // }
-
-• OK após alteração info
-
-• DEVOLUCAO NÃO PODE SER INFERIOR A RETIRADA
+• OK após alteração info (DONE)
+• Devolução não pode ser inferior a retirada (DONE)

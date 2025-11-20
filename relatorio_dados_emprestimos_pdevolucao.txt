@@ -1,0 +1,24 @@
+CPF: 47620080010
+Nome: Junior
+ISBN: 9788546201943
+Título: A Cidade das Mares Eternas
+Data Retirada: 17/11/2025
+Data Devolução: 27/11/2025
+Multa Diária: 12.00
+
+CPF: 47620080010
+Nome: Junior
+ISBN: 9786598723019
+Título: O Engenheiro do Vazio
+Data Retirada: 10/11/2025
+Data Devolução: 20/11/2025
+Multa Diária: 14.00
+
+CPF: 47620080030
+Nome: Lisa da Silva Silveira
+ISBN: 9781593278945
+Título: Fragmentos de um Sol Partido
+Data Retirada: 1/11/2025
+Data Devolução: 30/11/2025
+Multa Diária: 26.00
+
