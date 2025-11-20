@@ -78,6 +78,8 @@ int deletar_emprestimo(struct Emprestimo *DB, int *qntd);
 void salvar_emprestimos(struct Emprestimo *DB, int qntd);
 int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprestimo *DB, int qntd);
 
+void submenu_relatorios();
+
 int AUXILIAR_contarString(char str[]);
 int AUXILIAR_confirmar();
 void AUXILIAR_limparBuffer();
@@ -85,6 +87,8 @@ void AUXILIAR_lerData(int d[]);
 
 int AUXILIAR_lerCPF(char *cpfBusca);
 int AUXILIAR_lerISBN(char *isbnBusca);
+
+int AUXILIAR_compararDatasEmprestimo(int devolucao[], int retirada[]);
 
 // ==================== AUXILIARES ====================
 int AUXILIAR_contarString(char str[]) {
@@ -168,6 +172,20 @@ int AUXILIAR_lerISBN(char *isbnBusca) {
 
     return 1;
 }
+int AUXILIAR_compararDatasEmprestimo(int devolucao[], int retirada[]) {
+    // Ano (Ano pode ser maior, então já retorna, mas se for igual segue. Essa é a lógica dos demais)
+    if (devolucao[2] < retirada[2]) return 0;
+    if (devolucao[2] > retirada[2]) return 1;
+
+    // Mes ( anos iguais )
+    if (devolucao[1] < retirada[1]) return 0;
+    if (devolucao[1] > retirada[1]) return 1;
+
+    // Dia ( anos e meses iguais )
+    if (devolucao[0] < retirada[0]) return 0;
+
+    return 1; // Igual ou maior → válido
+}
 
 // ==================== PROGRAMA PRINCIPAL ====================
 int main() {
@@ -196,6 +214,9 @@ void menu_principal() {
                 break;
             case 3:
                 submenu_emprestimos();
+                break;
+            case 4:
+                // submenu_relatorios();
                 break;
         }
     } while (opt != 5);
@@ -1388,8 +1409,13 @@ int inserir_emprestimo(struct Emprestimo **DB, struct Usuario *DB_Usuarios, stru
 
     // Passado tudo isso, finalmente...
     // #================ DATA DEVOLUÇÃO
-    printf("\nNOVO - Insira a Data para Devolucao: ");
+    printf("\nNOVO - Insira a Data para Devolucao.\n");
     AUXILIAR_lerData(novoE.data_devolucao);
+
+    if (AUXILIAR_compararDatasEmprestimo(novoE.data_devolucao, novoE.data_retirada) == 0) {
+        printf("\n\033[32mAVISO:\033[0m Data de devolucao nao pode ser antes da retirada.\n");
+        return 0;
+    }
 
     // #================ MULTA DIARIA
     printf("\nNOVO - Insira valor da Multa Diaria: ");
@@ -1490,21 +1516,39 @@ int alterar_emprestimo(struct Emprestimo *DB, struct Usuario *DB_Usuarios, struc
                 printf("Nova data de emprestimo do livro: ");
                 AUXILIAR_lerData(tempData);
 
-                if (buscar_index_emprestimo(temp.CPF_Pessoa, temp.ISBN_Livro, tempData, DB, qntd) != -1) {
-                    printf("\n\033[32mAVISO:\033[0m Já existe um cadastro com esse CPF, ISBN e na Data Informada.");
+                if (AUXILIAR_compararDatasEmprestimo(temp.data_devolucao, tempData) == 0) {
+                    printf("\n\033[32mAVISO:\033[0m Data de devolucao nao pode ser antes da retirada.\n");
+                } else{
+                    if (buscar_index_emprestimo(temp.CPF_Pessoa, temp.ISBN_Livro, tempData, DB, qntd) != -1) {
+                        printf("\n\033[32mAVISO:\033[0m Já existe um cadastro com esse CPF, ISBN e na Data Informada.");
+                    }
+                    else {
+                        for (j = 0; j < 3; j++) 
+                        {
+                            // Atribuição elemento por elemento
+                            temp.data_retirada[j] = tempData[j];
+                        }
+                        printf("\n\033[32mOK!\033[0m\n");
+                    }
                 }
-                else {
+        
+                break;
+            case 4:
+                printf("Nova data de devolucao do livro: ");
+                AUXILIAR_lerData(tempData);
+
+                if (AUXILIAR_compararDatasEmprestimo(tempData, temp.data_retirada) == 0) {
+                    printf("\n\033[32mAVISO:\033[0m Data de devolucao nao pode ser antes da retirada.\n");
+                } else{
                     for (j = 0; j < 3; j++) 
                     {
                         // Atribuição elemento por elemento
-                        temp.data_retirada[j] = tempData[j];
+                        temp.data_devolucao[j] = tempData[j];
                     }
                     printf("\n\033[32mOK!\033[0m\n");
                 }
-            case 4:
-                printf("Nova data de devolucao do livro: ");
-                AUXILIAR_lerData(temp.data_devolucao);
-                printf("\n\033[32mOK!\033[0m\n");
+
+                break;
             case 5:
                 printf("Novo valor da multa por atraso: ");
                 scanf("%f", &temp.multa_diaria);
@@ -1528,13 +1572,7 @@ int alterar_emprestimo(struct Emprestimo *DB, struct Usuario *DB_Usuarios, struc
 
     );
 
-    // imprime lista de autores
-    for (a = 0; a < MAX_AUTORES; a++) {
-        if (temp.autores[a][0] != '\0') {
-            printf("\033[36m- \033[32m%s\033[0m\n", temp.autores[a]);
-        }
-    }
-    printf("Alterar o livro?\n");
+    printf("Alterar o emprestimo?\n");
     if (AUXILIAR_confirmar()) {
         DB[i] = temp;
         return 1;
@@ -1616,5 +1654,49 @@ int buscar_index_emprestimo(char cpf[], char isbn[], int keys[3], struct Emprest
 
     return (FLAG_indexLocalized) ? i : -1; 
 }
-
 // O exercico faz com que oprograma assuma ter N livros existentes, e não conta se um livro foi devolvido ou não para os emprestismos... Poderia ser uma biblioteca virtual?
+
+// ==================== SUBPROGRAMA RELATORIOS ====================
+// void submenu_relatorios() {
+//     int opt;
+
+//     struct Emprestimo *DB_Emprestimos = NULL;
+//     int qntd_elementos = 0, capacidade_total = 0;
+//     DB_Emprestimos = carregar_emprestimos(&qntd_elementos, &capacidade_total);
+
+//     struct Usuario *DB_Usuarios = NULL;
+//     int qntd_elementos_u = 0, capacidade_total_u = 0;
+//     DB_Usuarios = carregar_usuarios(&qntd_elementos_u, &capacidade_total_u);
+
+//     struct Livro *DB_Livros = NULL;
+//     int qntd_elementos_l = 0, capacidade_total_l = 0;
+//     DB_Livros = carregar_livros(&qntd_elementos_l, &capacidade_total_l);
+
+//     do {
+//         printf("#-------- MENU DE RELATORIOS. --------#\n");
+//         printf("1. RELATORIO: Todos os dados de todos os usuários com X de idade.\n");
+//         printf("2. RELATORIO: Todos os dados de todos os livros que tenham mais do que X autores.\n");
+//         printf("3. Inserir Emprestimo\n");
+//         // Mostrar o CPF da pessoa, o nome da pessoa, o ISBN do livro, o título do livro e
+//         // todos os demais atributos dos empréstimos que possuem data de devolução
+//         // entre as datas X e Y (inclusive), ambas fornecidas pelo usuário.
+//         printf("4. Alterar Emprestimo\n");
+
+//         printf("Escolha sua opcao: ");
+//         scanf("%d", &opt);
+//         AUXILIAR_limparBuffer();
+
+//         switch(opt) {
+//             case 1:
+//                 relatorio_dados_usuarios_xidade();
+//             case 2:
+
+//         }
+
+//     } while (opt != 4);
+
+//     if(DB_Emprestimos != NULL) free(DB_Emprestimos);
+//     if(DB_Usuarios != NULL) free(DB_Usuarios);
+//     if(DB_Livros != NULL) free(DB_Livros);
+//     printf("Retornando...\n\n");
+// }
